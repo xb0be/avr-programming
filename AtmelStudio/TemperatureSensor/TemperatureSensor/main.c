@@ -43,7 +43,7 @@
 *	                         |          PA0 | -------------> | D2                |
 *	                         |          PA1 | -------------> | D3                |
 *	                         |          PA2 | -------------> | D4                |
-*	                         |			    |                |                   |
+*	                         |              |                |                   |
 *	                         |______________|                |___________________|
  *
 // 7-segment display, harvested from old darts board, "reverse engineered".
