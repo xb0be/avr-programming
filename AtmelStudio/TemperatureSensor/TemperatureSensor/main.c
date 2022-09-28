@@ -28,6 +28,7 @@
  * Author : rludvik, September 2022
  * 
  * Schematic:
+ 
 *	 _______                  ______________                  ___________________
 *	| DHT22 |                | Attiny 4313  |                | 7-segment display |
 *	|       |                |              |                |                   |
