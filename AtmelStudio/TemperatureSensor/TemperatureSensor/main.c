@@ -69,7 +69,7 @@
 #include "DHT22int_4313.h"
 
 //#define SegOne   0x01		// Digit select pins -> D1 is not used here, since we have semi 4-digit display
-#define SegTwo   0x01
+#define SegTwo   0x01		// (see image in Github).
 #define SegThree 0x02
 #define SegFour  0x04
 
