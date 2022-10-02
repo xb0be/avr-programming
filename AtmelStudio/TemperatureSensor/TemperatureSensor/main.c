@@ -40,16 +40,16 @@
 *	                         |          PB1 | -------------> | F                 |
 *	                         |          PB0 | -------------> | G                 |
 *	                         |              |                |                   |
-*	                         |          PA0 | -------------> | D2                |
-*	                         |          PA1 | -------------> | D3                |
-*	                         |          PA2 | -------------> | D4                |
+*	                         |          PD0 | -------------> | D1                |
+*	                         |          PD1 | -------------> | D2                |
+*	                         |          PD3 | -------------> | D3                |
 *	                         |              |                |                   |
 *	                         |______________|                |___________________|
  *
 // 7-segment display, harvested from old darts board, "reverse engineered".
 // Common-anode type => LOW (or 0) lights up the LED.
 // So to light up certain segment, set it to LOW (or 0).
-// 4 digits (well, A+B+DP of digit 1 + 3 full digits :)
+// 4 digits (well, A+B+DP of digit 4 + 3 full digits :)
 // Look from above, decimal points are on top!
 
 //        D1 G  F  DP A  B
@@ -61,17 +61,16 @@
 //        E  D4 D3 C  D  D2
  */ 
 
-#define F_CPU 1000000L
+//#define F_CPU 1000000L
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
 #include "DHT22int_4313.h"
 
-//#define SegOne   0x01		// Digit select pins -> D1 is not used here, since we have semi 4-digit display
-#define SegTwo   0x01		// (see image in Github).
-#define SegThree 0x02
-#define SegFour  0x04
+#define SegOne 0x01
+#define SegTwo 0x02
+#define SegThree 0x08
 
 
 int main(void)
@@ -82,9 +81,12 @@ int main(void)
 
 // Array of chars to display (0..9)
 char seg_code[]={0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xf8,0x80,0x90};	// "ordinary" numbers
-char seg_code_dp[]={0x40,0x79,0x24,0x30,0x19,0x12,0x02,0x78,0x00,0x10};	// numbers with DP on
+char seg_code_dp[]={0x40,0x79,0x24,0x30,0x19,0x12,0x02,0x78,0x00,0x10};	// Numbers with DP on
 int temp_integral_tens, temp_integral_ones, temp_decimal_tens;
-DDRA = 0xff; // Digit select PORTA0 - PORTA2
+DDRB = 0xff;			// Output to 7-segment display
+DDRD |= ~(1<<PIND0);	// Select digit pins
+DDRD |= ~(1<<PIND1);
+DDRD |= ~(1<<PIND3);
 
 /*
 * DHT22 + main things
@@ -92,8 +94,8 @@ DDRA = 0xff; // Digit select PORTA0 - PORTA2
 
 DHT22_STATE_t state;
 DHT22_DATA_t sensor_data;
-sei();
 DHT22_Init();
+sei();
 
     while (1) 
     {
@@ -104,25 +106,26 @@ DHT22_Init();
 		state = DHT22_CheckStatus(&sensor_data);
 		if (state == DHT_DATA_READY){
 			// Do something with the data.
-			/* 12.34 -> 12.3 (because we only have 3-digit display basically). D1 will not be used
+			
+		/* 12.34 -> 12.3 (because we only have 3-digit display basically). D4 will not be used
 			Example:
 				sensor_data.temperature_integral = 12
 				sensor_data.temperature_decima = 34
 			translates to:
-			D2 = 1
-			D3 = 2 + DP
-			D4 = 3
-			*/
+			D3 = 1
+			D2 = 2 + DP
+			D1 = 3
+		*/
 			temp_integral_tens = sensor_data.temperature_integral / 10;
 			temp_integral_ones = sensor_data.temperature_integral % 10;
-			PORTA = SegTwo;
+			PORTD = SegOne;
 			PORTB = seg_code[temp_integral_tens];
 			_delay_ms(1);
-			PORTA = SegThree;
+			PORTD = SegTwo;
 			PORTB = seg_code_dp[temp_integral_ones];
 			_delay_ms(1);
 			temp_decimal_tens = sensor_data.temperature_decimal / 10;
-			PORTA = SegFour;
+			PORTD = SegThree;
 			PORTB = seg_code[temp_decimal_tens];	
 			_delay_ms(1);
 			// sensor_data.humidity_integral
@@ -134,16 +137,16 @@ DHT22_Init();
 			// C = 0xC6
 			// S. = 0x12
 			// E = 0x86
-			PORTA = SegTwo;
+			PORTD = SegThree;
 			PORTB = 0xc6;
 			_delay_ms(1);
-			PORTA = SegThree;
+			PORTD = SegTwo;
 			PORTB = 0x12;
 			_delay_ms(1);
-			temp_decimal_tens = sensor_data.temperature_decimal / 10;
-			PORTA = SegFour;
+			PORTD = SegOne;
 			PORTB = 0x86;
 			_delay_ms(1);
+			
 		}
 		else if (state == DHT_ERROR_NOT_RESPOND){
 			// Do something if the sensor did not respond
@@ -151,17 +154,17 @@ DHT22_Init();
 			// D = 0 = 0xc0
 			// G. 6. = 0x02
 			// E = 0x86
-			PORTA = SegTwo;
+			PORTD = SegThree;
 			PORTB = 0xc0;
 			_delay_ms(1);
-			PORTA = SegThree;
+			PORTD = SegTwo;
 			PORTB = 0x02;
 			_delay_ms(1);
-			temp_decimal_tens = sensor_data.temperature_decimal / 10;
-			PORTA = SegFour;
+			PORTD = SegOne;
 			PORTB = 0x86;
+			_delay_ms(1);
 		}
-		_delay_ms(10000);
+		//_delay_ms(10000);
     }
 }
 
