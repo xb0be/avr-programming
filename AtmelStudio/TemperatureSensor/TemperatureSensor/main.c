@@ -20,8 +20,6 @@
  * See well documented DHT22int.c and DHT22int_4313.h files for detail on how this works.
  *
  * Make use of DHT22 temperature and humidity sensor and display values on 7-segment display.
- * Note: changes from previous example:
- * Since PD2 has to be used for interrupt (INT0), DDRA will be used for Select digit.
  *
  * See lines in DHT22_int_4313.h commented with "//rludvik attiny4313" for changes made!
  *
