@@ -59,7 +59,7 @@
 //        E  D4 D3 C  D  D2
  */ 
 
-//#define F_CPU 1000000L
+#define F_CPU 1000000L
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>

@@ -70,8 +70,32 @@
 			  can set the prescaler to divide by 8. */
 // rludvik attiny4313
 //#define TIMER_SETUP_CTC					TCCR2A = (1 << WGM21);   // Code to configure the timer in CTC mode.
-#define TIMER_SETUP_CTC					TCCR0A = (1 << WGM01);   // Code to configure the timer in CTC mode.
-
+//#define TIMER_SETUP_CTC					TCCR0A = (1 << WGM01);   // Code to configure the timer in CTC mode.
+#define TIMER_SETUP_CTC					TCCR1A = (1 << WGM11);   // Code to configure the timer in CTC mode.
+/*
+ATtiny 4313
+12.8.2
+Clear Timer on Compare Match (CTC) Mode
+In Clear Timer on Compare or CTC mode (WGM13:0 = 4 or 12), the OCR1A or ICR1 Register
+are used to manipulate the counter resolution. In CTC mode the counter is cleared to zero when
+the counter value (TCNT1) matches either the OCR1A (WGM13:0 = 4) or the ICR1 (WGM13:0 =
+12). The OCR1A or ICR1 define the top value for the counter, hence also its resolution. This
+mode allows greater control of the compare match output frequency. It also simplifies the opera-
+tion of counting external events.
+The timing diagram for the CTC mode is shown in Figure 12-6. The counter value (TCNT1)
+increases until a compare match occurs with either OCR1A or ICR1, and then counter (TCNT1)
+is cleared.
+*/
+/*
+ATmega
+17.7.2 Clear Timer on Compare Match (CTC) Mode
+In clear timer on compare or CTC mode (WGM22:0 = 2), the OCR2A register is used to manipulate the counter resolution. In
+CTC mode the counter is cleared to zero when the counter value (TCNT2) matches the OCR2A. The OCR2A defines the top
+value for the counter, hence also its resolution. This mode allows greater control of the compare match output frequency. It
+also simplifies the operation of counting external events.
+The timing diagram for the CTC mode is shown in Figure 17-5. The counter value (TCNT2) increases until a compare match
+occurs between TCNT2 and OCR2A, and then counter (TCNT2) is cleared.
+*/
 // rludvik attiny4313
 //#define TIMER_ENABLE_CTC_INTERRUPT		TIMSK2 = (1 << OCIE2A);  // Code to enable Compare Match Interrupt
 #define TIMER_ENABLE_CTC_INTERRUPT		TIMSK = (1 << OCIE0A);  // Code to enable Compare Match Interrupt
@@ -82,7 +106,9 @@
 
 // rludvik attiny4313
 //#define TIMER_COUNTER_REGISTER			TCNT2			// Timer counter register
-#define TIMER_COUNTER_REGISTER			TCNT0			// Timer counter register
+//#define TIMER_COUNTER_REGISTER			TCNT0			// Timer counter register
+#define TIMER_COUNTER_REGISTER			TCNT1			// Timer counter register
+
 
 // rludvik attiny4313
 //#define TIMER_START						TCCR2B = (1 << CS21); // Code to start timer with 1MHz clock
