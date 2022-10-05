@@ -70,8 +70,8 @@
 			  can set the prescaler to divide by 8. */
 // rludvik attiny4313
 //#define TIMER_SETUP_CTC					TCCR2A = (1 << WGM21);   // Code to configure the timer in CTC mode.
-//#define TIMER_SETUP_CTC					TCCR0A = (1 << WGM01);   // Code to configure the timer in CTC mode.
-#define TIMER_SETUP_CTC					TCCR1A = (1 << WGM11);   // Code to configure the timer in CTC mode.
+#define TIMER_SETUP_CTC					TCCR0A = (1 << WGM01);   // Code to configure the timer in CTC mode.
+//#define TIMER_SETUP_CTC					TCCR1A = (1 << WGM11);   // Code to configure the timer in CTC mode.
 /*
 ATtiny 4313
 12.8.2
@@ -106,8 +106,8 @@ occurs between TCNT2 and OCR2A, and then counter (TCNT2) is cleared.
 
 // rludvik attiny4313
 //#define TIMER_COUNTER_REGISTER			TCNT2			// Timer counter register
-//#define TIMER_COUNTER_REGISTER			TCNT0			// Timer counter register
-#define TIMER_COUNTER_REGISTER			TCNT1			// Timer counter register
+#define TIMER_COUNTER_REGISTER			TCNT0			// Timer counter register
+//#define TIMER_COUNTER_REGISTER			TCNT1			// Timer counter register
 
 
 // rludvik attiny4313
