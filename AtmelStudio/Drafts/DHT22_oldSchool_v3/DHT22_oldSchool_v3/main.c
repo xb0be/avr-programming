@@ -25,13 +25,13 @@ void Request()                /* Microcontroller send start pulse/request */
 	DHT_PORT &= ~(1<<DHT11_PIN);    /* set to low pin */
 	_delay_ms(20);            /* wait for 20ms */
 	DHT_PORT |= (1<<DHT11_PIN);    /* set to high pin */
-	ssdDisplay(9);
+	//ssdDisplay(9);
 }
 
 void Response()                /* receive response from DHT11 */
 {
 	DHT_DDR &= ~(1<<DHT11_PIN);
-	ssdDisplay(1);
+	//ssdDisplay(1);
 	DHT_PORT |= (1<<DHT11_PIN);    /* set to high pin */
 	while(DHT_PIN & (1<<DHT11_PIN));
 	ssdDisplay(2);					//HERE IT STOPS
