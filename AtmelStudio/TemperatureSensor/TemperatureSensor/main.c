@@ -59,12 +59,12 @@
 //        E  D4 D3 C  D  D2
  */ 
 
-#define F_CPU 1000000L
+#define F_CPU 8000000UL
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-#include "DHT22int_4313.h"
+#include "DHT22int.h"
 
 #define SegOne 0x01
 #define SegTwo 0x02
