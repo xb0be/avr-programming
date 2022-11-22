@@ -41,6 +41,7 @@
  * Please, see the comments at the .c file about how the lib works and how to use it.
  */
 
+#define F_CPU 1000000UL
 
 #ifndef DHT22INT_H_
 #define DHT22INT_H_
@@ -112,7 +113,7 @@ occurs between TCNT2 and OCR2A, and then counter (TCNT2) is cleared.
 
 // rludvik attiny4313
 //#define TIMER_START						TCCR2B = (1 << CS21); // Code to start timer with 1MHz clock
-#define TIMER_START						TCCR0B = (1 << CS01); // Code to start timer with 1MHz clock
+#define TIMER_START						TCCR0B = (1 << CS00); // Code to start timer with 1MHz clock
 
 // rludvik attiny4313
 //#define TIMER_STOP						TCCR2B = 0; // Code to stop the timer by writing 0 in prescaler bits.
