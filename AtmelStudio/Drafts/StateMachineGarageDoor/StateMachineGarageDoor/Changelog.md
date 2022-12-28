@@ -4,8 +4,10 @@
 - added option to open/close the door during the closing/opening
 - drawio schematic updated, new PNG exported
 
-## TODO
+### TODO
 - check if ALARM state is now "accessible" (after declaring volatile variable)
+- implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
+- implement motor functions (motorStart, motorStop, motorOpenDirection, motorCloseDirection)
 - find a solution for photo-eye:
   +  https://www.amazon.de/-/en/Receiver-Non-Modulator-Detection-KY-008-650nm-Transmitter/dp/B09TK119QX/ref=sr_1_9?crid=27KSHFT81FDYG&keywords=KY-008&qid=1671995727&sprefix=ky-008%2Caps%2C98&sr=8-9
   + https://www.build-electronic-circuits.com/ldr-circuit-diagram/
