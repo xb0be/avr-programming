@@ -5,6 +5,7 @@
 - drawio schematic updated, new PNG exported
 
 ### TODO
+- //set MOTOR_STOP_PIN as input for the button + //enable pull-up resistor on button input
 - check if ALARM state is now "accessible" (after declaring volatile variable).
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
 - implement motor functions (motorStop, motorOpen, motorClose).
