@@ -1,17 +1,21 @@
 # Changelog
+2022-12-29
+- added UART RF part (receiver.c, transmitter.c)
+
 2022-12-26
 - moved definitions to header file
 - added option to open/close the door during the closing/opening
 - drawio schematic updated, new PNG exported
 
 ### TODO
-- //set MOTOR_STOP_PIN as input for the button + //enable pull-up resistor on button input
 - check if ALARM state is now "accessible" (after declaring volatile variable).
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
 - implement motor functions (motorStop, motorOpen, motorClose).
 - (maybe) add additional switch when door is almost closed/open to trigger slower motor motion. Plus voltage divider with potentimeter ...
+- test with current RF kit. If not working, buy a new one (the current one is old as hell)
+- update transmitter.c with new commands (see receiver.c), change settings (F_CPU, address, SYNC)
 - find a solution for photo-eye:
-  +  https://www.amazon.de/-/en/Receiver-Non-Modulator-Detection-KY-008-650nm-Transmitter/dp/B09TK119QX/ref=sr_1_9?crid=27KSHFT81FDYG&keywords=KY-008&qid=1671995727&sprefix=ky-008%2Caps%2C98&sr=8-9
+  + https://www.amazon.de/-/en/Receiver-Non-Modulator-Detection-KY-008-650nm-Transmitter/dp/B09TK119QX/ref=sr_1_9?crid=27KSHFT81FDYG&keywords=KY-008&qid=1671995727&sprefix=ky-008%2Caps%2C98&sr=8-9
   + https://www.build-electronic-circuits.com/ldr-circuit-diagram/
   + https://www.amazon.de/-/en/sourcing-2pairs-Infrared-Optical-Sensor/dp/B07L4LTFJY/ref=sr_1_15?crid=2OSN2XEZIOHKX&keywords=1+paar+fotoelektrisch&qid=1672079354&sprefix=1+pair+photoelectric%2Caps%2C94&sr=8-15
 

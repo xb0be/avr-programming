@@ -40,4 +40,18 @@ Define all states of the machine
 
 #define BOUNCETIME	30				//Period for bounce in ms
 
+/*
+UART RF settings
+*/
+#define BAUDRATE 9600						//set desired baud rate
+#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//calculate UBRR value
+//define receive parameters
+#define SYNC 0xBB							//synchronization signal
+#define RADDR 0x55							//receiver address
+//#define LED_TOGGLE 0x11					//LED toggle command
+#define MOTOR_STOP_CMD 0x69					//Command to stop the motor
+#define MOTOR_OPEN_CMD 0xA0					//Command to open the door
+#define MOTOR_CLOSE_CMD 0xF0				//Command to close the door
+//#define LED 0								// Led1 connected to port C pin 0
+
 #endif

@@ -30,6 +30,9 @@ Simple schematics:
 When we press the switch, the input pin is pulled to ground. Thus, we’re
 waiting for the pin to go low.
 The button is pressed when BUTTON1 bit is clear: if (!(PINB & (1<<BUTTON1)))
+
+RF with UART: https://www.youtube.com/watch?v=4TPwvxCTS4I
+https://drive.google.com/drive/folders/1G8QLIVCWlWAjIYiDAR0_j9Lhmxq-QTzu
  */ 
 
 #define F_CPU 8000000UL
@@ -124,9 +127,14 @@ int main(void) {
 	PORTD |= (1 << OPEN_SWITCH_PIN);		//enable pull-up resistor on button input
 	DDRD &= ~(1 << CLOSE_SWITCH_PIN);		//set CLOSE_SWITCH_PIN as input for the button
 	PORTD |= (1 << CLOSE_SWITCH_PIN);		//enable pull-up resistor on button input
-
+	DDRD &= ~(1 << MOTOR_STOP_PIN);			//set CLOSE_SWITCH_PIN as input for the button
+	PORTD |= (1 << MOTOR_STOP_PIN);			//enable pull-up resistor on button input	
+	
 	initLEDs();
 	initTimer();
+	//Part for receiver over UART - code is in receiver.c
+	Main_Init();
+	USART_Init();
 	
 	while(1)
 	{
@@ -287,3 +295,4 @@ ISR(TIMER1_OVF_vect)
 	}
 	extraTime = 0;						//reset extraTime
 }
+
