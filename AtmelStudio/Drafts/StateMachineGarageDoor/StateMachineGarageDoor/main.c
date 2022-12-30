@@ -10,11 +10,13 @@ Simple schematics:
                        _____________
                       | ATmega328p  |
               _       |             |
- GND -------. | .---- | PD0     PC0 | ----- 4k7 --- Green LED
+ GND -------. | .---- | PD0     PC0 | ----- 4k7 --- Green LED (open)
               _       |             |
- GND -------. | .---- | PD1     PC1 | ----- 4k7 --- White LED
+ GND -------. | .---- | PD1     PC1 | ----- 4k7 --- White LED (close)
                       |             | 
-                      |         PC0 | ----- 4k7 --- Red LED
+                      |         PC2 | ----- 4k7 --- Red LED (alarm)
+                      |             | 					  
+                      |         PC3 | ----- 4k7 --- Blue LED (RF)				  
  GND -------./ .----- | PD2         |
                       |             |
  GND -------./ .----- | PD3         |
@@ -45,6 +47,8 @@ https://drive.google.com/drive/folders/1G8QLIVCWlWAjIYiDAR0_j9Lhmxq-QTzu
 volatile int extraTime = 0;					//Init extraTime
 volatile char state = CLOSED;				//Initial state is Closed
 char from;									//From which state we came for LED_ON - LED_OFF states
+volatile char RF;						//Flag, if we are coming to state machine from RF
+
 
 /*
 Turn off all the LEDs.
@@ -53,6 +57,7 @@ void initLEDs(){
 	PORTC &= ~(1 << OPEN_LED_PIN);
 	PORTC &= ~(1 << CLOSE_LED_PIN);
 	PORTC &= ~(1 << ALARM_LED_PIN);
+	PORTC &= ~(1 << RF_LED_PIN);
 }
 
 /* Initialization of 16-bit timer, used for timeouts
@@ -263,6 +268,9 @@ int main(void) {
 				}
 				break;
 			case LED_ON:
+				if ((RF == 1)){							//Signal came from RF
+					PORTC |= (1 << RF_LED_PIN);			//Switch the blue LED off
+				}
 				if ((from == 2)){						//Switch the appropriate LED on
 					PORTC |= (1 << CLOSE_LED_PIN);
 				} else {
@@ -272,12 +280,16 @@ int main(void) {
 				state = LED_OFF;
 				break;
 			case LED_OFF:
+				if ((RF == 1)){							//Signal came from RF
+					PORTC &= ~(1 << RF_LED_PIN);		//Switch the blue LED off
+				}
 				if ((from == 2)){						//Switch the appropriate LED off
 					PORTC &= ~(1 << CLOSE_LED_PIN);
 					} else {
 					PORTC &= ~(1 << OPEN_LED_PIN);
 				}
 				_delay_ms(100);
+				RF = 0;									//Reset RF flag
 				state = from;
 				break;							
 			default:

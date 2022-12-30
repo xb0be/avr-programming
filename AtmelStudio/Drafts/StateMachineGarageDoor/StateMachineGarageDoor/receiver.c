@@ -10,6 +10,7 @@
 #include "settings.h"
 
 volatile char state;						//Needed to update the state machine
+volatile char RF = 0;						//Flag, if we are coming to state machine from RF
 
 //Initializing UART
 void USART_Init(void)
@@ -45,26 +46,23 @@ ISR(USART_RX_vect)
 			switch (data)
 			{
 				case MOTOR_STOP_CMD:
+					RF = 1;
 					state = ALARM;
 					break;
 				case MOTOR_OPEN_CMD:
+					RF = 1;
 					state = OPENING;
 					break;
 				case MOTOR_CLOSE_CMD:
+					RF = 1;
 					state = CLOSING;
 					break;
 				default:
 					break; 
 			} //end switch
-			/*
-			if(data==LED_TOGGLE)
-			{
-				PORTC ^= (1<<LED); // Toggling the current state of the pin LED. LED is turn on.
-			}
-			*/
-		}
-	}
-}
+		} //end if
+	} //end if
+} //end ISR
 
 // Main initialization
 void Main_Init(void)
