@@ -71,7 +71,8 @@ void initTimer(){
 }
 
 /*
-Sartp the timer running.
+Start the 16-bit timer.
+Each overflow for 1024 prescaler at 8MHz lasts 8.388736 seconds
 */
 void startTimer(){
 	TCCR1B = (1 << CS12) | (1 << CS10);			//Start the timer. To stop it, just write 0 to these bits.
@@ -81,7 +82,7 @@ void startTimer(){
 Stop the timer running.
 */
 void stopTimer(){
-	TCCR1B &= ~((1 << CS12) | (1 << CS10));
+//	TCCR1B &= ~((1 << CS12) | (1 << CS10));
 }
 
 /*
@@ -138,8 +139,8 @@ int main(void) {
 	initLEDs();
 	initTimer();
 	//Part for receiver over UART - code is in receiver.c
-	Main_Init();
-	USART_Init();
+//	Main_Init();
+//	USART_Init();
 	
 	while(1)
 	{
