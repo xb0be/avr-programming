@@ -69,7 +69,7 @@ void Main_Init(void)
 {
 	//DDRC=0xFFu; //	Set all pins of the PORTC as output.
 	//PORTC=0xFFu; // Set all pins of the PORTC as HIGH. Internal Pull Up resistor is enable.
-	sei(); //enable global interrupts
+	//sei(); //enable global interrupts
 }
 
 // main function - entry point of the program
