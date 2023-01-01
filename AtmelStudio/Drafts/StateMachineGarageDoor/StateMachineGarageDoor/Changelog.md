@@ -1,4 +1,16 @@
 # Changelog
+2023-01-01
+Happy new year ;)
+- removed UART RF part to be able to clearly debug current issues
+- removed LED_ON, LED_OFF states
+- removed/replaced all _delay_ms functions
+- cleansed the ALARM state
+- added timer0 in CTC mode for button debouncing
+- added debounce functionality
+- tested state machine status transitions with LEDs (no motor yet)
+- discussed door mechanism with father (engineer for life), agreed to switch to sliding door. It's much more simple, 
+and there's enough space. He'll lead the mechanics department ;)
+
 2022-12-29
 - added UART RF part (receiver.c, transmitter.c)
 
