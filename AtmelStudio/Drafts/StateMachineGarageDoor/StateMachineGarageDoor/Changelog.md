@@ -1,4 +1,7 @@
 # Changelog
+2023-01-03
+- re-mapped the button ports from DDRD to DDRC, because PD0 and PD1 will be used for RF over UART
+
 2023-01-01
 Happy new year ;)
 - removed UART RF part to be able to clearly debug current issues
@@ -20,7 +23,7 @@ and there's enough space. He'll lead the mechanics department ;)
 - drawio schematic updated, new PNG exported
 
 ### TODO
-- check if ALARM state is now "accessible" (after declaring volatile variable).
+- update state machine graph in Drawio
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
 - implement motor functions (motorStop, motorOpen, motorClose).
 - (maybe) add additional switch when door is almost closed/open to trigger slower motor motion. Plus voltage divider with potentimeter ...
@@ -31,5 +34,8 @@ and there's enough space. He'll lead the mechanics department ;)
   + https://www.build-electronic-circuits.com/ldr-circuit-diagram/
   + https://www.amazon.de/-/en/sourcing-2pairs-Infrared-Optical-Sensor/dp/B07L4LTFJY/ref=sr_1_15?crid=2OSN2XEZIOHKX&keywords=1+paar+fotoelektrisch&qid=1672079354&sprefix=1+pair+photoelectric%2Caps%2C94&sr=8-15
 
-- door mechanism: https://mechamechanisms.com/folding-door-controlled-by-cable
+- door mechanism:
+ + (obsolete) https://mechamechanisms.com/folding-door-controlled-by-cable
+ + sliding door with "normal" door with lock to access buttons inside
+ + electro magnetic key/lock with emergency manual release + implementation (lockRelease(), lockHold())
 - put uC to sleep (power-down), wake up with interrupt (button pressed) => may need to change pin settings for buttons, since now INT0 and INT1 are already used. Or use pin change interrupt.
