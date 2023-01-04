@@ -1,12 +1,16 @@
-//Code for Receiver Model: XY-MK-5V Transmitting Frequency: 433.92MHz
-
+/*
+Code taken from:
+https://www.youtube.com/watch?v=4TPwvxCTS4I
+https://drive.google.com/drive/folders/1G8QLIVCWlWAjIYiDAR0_j9Lhmxq-QTzu
+Code for Receiver Model: XY-MK-5V Transmitting Frequency: 433.92MHz
+*/
 #ifndef F_CPU
 #define F_CPU 8000000UL
 #endif
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "settings.h"
 
 volatile char state;						//Needed to update the state machine
