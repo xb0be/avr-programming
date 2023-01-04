@@ -19,7 +19,7 @@
 #define CLOSE_SWITCH_PIN	PB3		//White wire
 
 //Emergency push button to stop the motor running
-//#define MOTOR_STOP_PIN		PB4
+#define MOTOR_STOP_PIN		PB4
 
 /*LEDs, motor, lock					- ################ OUTPUTS ################
 opening, closing	- green and white LEDs on
@@ -34,7 +34,7 @@ RF signal			- blue LED on
 //#define RF_LED_PIN			PC3		//Port for RF LED
 #define MOTOR_IN1_PIN		PC4		//To motor's IN1
 #define MOTOR_IN2_PIN		PC5		//To motor's IN2
-//#define LOCK_PIN			PC6		//Pin for electro magnetic lock (relay for it)
+#define LOCK_PIN			PC6		//Pin for electro magnetic lock (relay for it)
 
 //States definition
 //Define all states of the machine
@@ -47,14 +47,14 @@ RF signal			- blue LED on
 #define BOUNCETIME	30						//Period for bounce in ms
 
 //UART RF settings
-//#define BAUDRATE 9600						//set desired baud rate
-//#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//calculate UBRR value
+#define BAUDRATE 9600						//set desired baud rate
+#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//calculate UBRR value
 ////Define receive parameters
-//#define SYNC 0xBB							//synchronization signal
-//#define RADDR 0x55							//receiver address
+#define SYNC 0xBB							//synchronization signal
+#define RADDR 0x55							//receiver address
 ////Define commands
-//#define MOTOR_STOP_CMD 0x69					//Command to stop the motor
-//#define MOTOR_OPEN_CMD 0xA0					//Command to open the door
-//#define MOTOR_CLOSE_CMD 0xF0				//Command to close the door
+#define MOTOR_STOP_CMD 0x69					//Command to stop the motor
+#define MOTOR_OPEN_CMD 0xA0					//Command to open the door
+#define MOTOR_CLOSE_CMD 0xF0				//Command to close the door
 
 #endif
