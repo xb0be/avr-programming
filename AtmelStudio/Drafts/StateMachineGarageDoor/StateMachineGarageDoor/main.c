@@ -28,8 +28,6 @@ Simple schematics:
  --. | .--      == Push button
  --./ .--       == Switch (touchguard)
 
-RF with UART: https://www.youtube.com/watch?v=4TPwvxCTS4I
-https://drive.google.com/drive/folders/1G8QLIVCWlWAjIYiDAR0_j9Lhmxq-QTzu
 Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc-mode.html
 
  */ 
@@ -67,7 +65,7 @@ C=(8000000*0.0005/2*8)-1 = 249
 
 */
 void debounceTimerStart() {
-	OCR0A = 249;						//See formula
+	OCR0A = 249;						//See formula above
 	TCCR0A |= (1 << WGM01); 			//Set CTC mode
 	TCCR0B = (1 << CS01);				//Set 8 prescaler
 	TIMSK0 = (1 << OCIE0A);				//Timer/Counter0 Output Compare Match A Interrupt Enable
@@ -75,20 +73,20 @@ void debounceTimerStart() {
 }
 
 /* Initialization of 16-bit timer, used for timeouts
-Each overflow for 1024 prescaler at 8MHz lasts 8.388736 seconds
+Each overflow for 1024 prescaler at 8MHz lasts ~8.38 seconds
 When the TOIE0 bit is written to one, and the I-bit in the status register is set (this is done by sei();),
 the Timer/Counter overflow interrupt is enabled.
 */
-void initTimer(){
+void initTimer() {
 	TIMSK1 |= (1 << TOIE0);
-	sei();
+	//sei();
 }
 
 /*
 Start the 16-bit timer.
 Each overflow for 1024 prescaler at 8MHz lasts 8.388736 seconds
 */
-void startTimer(){
+void startTimer() {
 	TCNT1 = 0;
 	TCCR1B |= (1 << CS12) | (1 << CS10);			//Start the timer. To stop it, just write 0 to these bits.
 }
@@ -96,14 +94,14 @@ void startTimer(){
 /*
 Stop the timer.
 */
-void stopTimer(){
+void stopTimer() {
 	TCCR1B &= ~((1 << CS12) | (1 << CS10));
 }
 
 /*
-Shortcut for stop+start.
+Shortcut for stop+start timer.
 */
-void restartTimer(){
+void restartTimer() {
 	stopTimer();
 	startTimer();
 }
@@ -111,22 +109,25 @@ void restartTimer(){
 /*
 Stop the motor.
 */
-void motorStop(){
-	
+void motorStop() {								//Setting both pins to 0 makes the motor stop.
+	OUTPUT_PORT &= ~(1 << MOTOR_IN1_PIN);
+	OUTPUT_PORT &= ~(1 << MOTOR_IN2_PIN);
 }
 
 /*
-Start turning the motor to open direction.
+Start turning the motor to open direction.		//Check directions in practice!!!!!!!!!!!!!!!!!!!!!!
 */
-void motorOpen(){
-	
+void motorOpen() {
+	OUTPUT_PORT |= (1 << MOTOR_IN1_PIN);
+	OUTPUT_PORT &= ~(1 << MOTOR_IN2_PIN);
 }
 
 /*
 Start turning the motor to close direction.
 */
-void motorClose(){
-
+void motorClose() {
+	OUTPUT_PORT &= ~(1 << MOTOR_IN1_PIN);
+	OUTPUT_PORT |= (1 << MOTOR_IN2_PIN);
 }
 
 /*
@@ -135,14 +136,16 @@ and held back when the state switches to CLOSED.
 */
 
 void lockRelease() {
-	//trigger release
+	OUTPUT_PORT |= (1 << LOCK_PIN);
 	_delay_ms(200);								//Wait a little bit before starting a motor
 }
 
 void lockHold() {
 	_delay_ms(200);								//Wait a little bit before holding the lock
-	//trigger hold
+	OUTPUT_PORT &= ~(1 << LOCK_PIN);
 }
+
+void USART_Init();								//Just a declaration
 
 int main(void) {
 	OUTPUT_REG = 0xff; 							//LEDs and motor (output)
@@ -154,14 +157,14 @@ int main(void) {
 	INPUT_PORT |= (1 << OPEN_SWITCH_PIN);		//enable pull-up resistor on button input
 	INPUT_REG &= ~(1 << CLOSE_SWITCH_PIN);		//set CLOSE_SWITCH_PIN as input for the button
 	INPUT_PORT |= (1 << CLOSE_SWITCH_PIN);		//enable pull-up resistor on button input
-	//INPUT_REG &= ~(1 << MOTOR_STOP_PIN);			//set MOTOR_STOP_PIN as input for the button
-	//INPUT_PORT |= (1 << MOTOR_STOP_PIN);			//enable pull-up resistor on button input	
+	INPUT_REG &= ~(1 << MOTOR_STOP_PIN);		//set MOTOR_STOP_PIN as input for the button
+	INPUT_PORT |= (1 << MOTOR_STOP_PIN);		//enable pull-up resistor on button input	
 	
 	debounceTimerStart();
-	initTimer();							//sei() is included here
+	initTimer();
 	//Part for receiver over UART - code is in receiver.c
-//	Main_Init();
-//	USART_Init();
+	USART_Init();
+	sei();
 	
 	while(1)
 	{
@@ -169,43 +172,45 @@ int main(void) {
 		{
 			case CLOSED:
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);			//Turn on Closed LED, signaling the door is fully closed
-				OUTPUT_PORT &= (~1 << OPEN_LED_PIN);			//Turn off Open LED
+				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);			//Turn off Open LED
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);			//Turn off Alarm LED
 				lockHold();										//Hold the lock
 				
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {		//If the Open button was pressed
 						OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);	//Turn off CLOSE_LED_PIN
-						lockRelease();					//Release the lock
-						motorOpen();					//Start the motor to open the door
-						startTimer();
+						lockRelease();							//Release the lock
+						motorOpen();							//Start the motor to open the door
+						startTimer();							//Timer for timeout
 						state = OPENING;
 				}
 				break;
 			case OPENING:
 				//If the timeout appears, interrupt will handle it
 				
-				//Timer for blinking LED?
+				//Timer for blinking LED in the future version?
+				//Right now I just turn on both LEDs (opening + closing ones)
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
+				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 												
 				//If the Emergency button was pressed
-				//if ((!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) & buttonPressed) {
-						//stopTimer();
-						//state = ALARM;
-				//}
+				if ((!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) & buttonPressed) {
+						motorStop();
+						stopTimer();
+						state = ALARM;
+				}
 				
 				//If the Close button was pressed, change state to CLOSING
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
 						motorClose();					//Start the motor to close the door
-						restartTimer();
+						restartTimer();					//Direction was changed - reset the timeout timer
 						state = CLOSING;
 				}
 				
 				//If the Open door switch was hit
 				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & buttonPressed) {
 						motorStop();					//Stop the motor
-						stopTimer();
+						stopTimer();					//Stop the timeout timer - there was no timeout!
 						state = OPEN;
 				}
 				
@@ -216,31 +221,33 @@ int main(void) {
 				//}
 				break;
 			case OPEN:
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);			//Turn on OPEN_LED_PIN, signaling the door is open
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);			//Turn on just OPEN_LED_PIN, signaling the door is open
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
+				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
 				//If the Close button was pressed
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
 						OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);	//Turn off OPEN_LED_PIN
 						motorClose();					//Start the motor to close the door
-						startTimer();
+						startTimer();					//Timer for timeout
 						state = CLOSING;
 				}
 				break;
 			case CLOSING:
 				//If the timeout appears, interrupt will handle it
 				
-				//Timer for blinking LED?
+				//Timer for blinking LED in the future version?
+				//Right now I just turn on both LEDs (opening + closing ones)
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
 												
 				//If the Emergency button was pressed
-				//if ((!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) & buttonPressed) {
-						//stopTimer();
-						//state = ALARM;
-				//}
+				if ((!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) & buttonPressed) {
+						motorStop();
+						stopTimer();
+						state = ALARM;
+				}
 				
 				//If the Open button was pressed, change state to OPENING
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {
@@ -264,19 +271,19 @@ int main(void) {
 				//If the Closed door switch was NOT hit
 				//if (INPUT_PIN & (1 << CLOSE_SWITCH_PIN)){
 					//from = 2; //CLOSING;
-					//state = LED_ON;						//Switch the state to LED_ON
+					//state = LED_ON;							//Switch the state to LED_ON
 				//}
 				break;
 			case ALARM:
-				OUTPUT_PORT |= (1 << ALARM_LED_PIN);			//Turn on red LED
-				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);	//Turn off OPEN_LED_PIN
-				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);	//Turn off OPEN_LED_PIN
+				OUTPUT_PORT |= (1 << ALARM_LED_PIN);			//Turn on just a red LED
+				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				stopTimer();
 				
 				//If the Close button was pressed
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
 						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
-						motorClose();					//Start motor to close the door
+						motorClose();							//Start motor to close the door
 						startTimer();
 						state = CLOSING;
 				}
@@ -284,7 +291,7 @@ int main(void) {
 				//If the Open button was pressed
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {	
 						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
-						motorOpen();					//Start motor to open the door
+						motorOpen();							//Start motor to open the door
 						startTimer();
 						state = OPENING;
 				}
@@ -348,4 +355,11 @@ ISR(TIMER0_COMPA_vect)
 When we press the switch, the input pin is pulled to ground. Thus, we’re
 waiting for the pin to go low.
 The button is pressed when BUTTON1 bit is clear: if (!(PINB & (1<<BUTTON1)))
+
+IN1		IN2		Motor Status
+-------------------------------
+LOW		LOW		Stops
+LOW		HIGH	Clockwise
+HIGH	LOW		Anti-Clockwise
+HIGH	HIGH	Stops
 */
