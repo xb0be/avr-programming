@@ -1,4 +1,12 @@
 # Changelog
+2023-01-11
+- added new states to the state machine (see PNG) for poor man's security
+- updated drawio and PNG commited
+- adjusted 16-bit timer for timeouts (256 pre-scaler instead of 1024, means 2 seconds instead of 8 seconds).
+Because of this also extraTime comparison adjusted (from 1 (8 sec) to 5 (10 sec))
+- implemented lock functions (draft): unlock() and lock() for Solenoid
+- implement motor functions (draft): motorStop(), motorOpen(), motorClose()
+
 2023-01-03
 - re-mapped the button ports from DDRD to DDRC, because PD0 and PD1 will be used for RF over UART
 
@@ -23,9 +31,7 @@ and there's enough space. He'll lead the mechanics department ;)
 - drawio schematic updated, new PNG exported
 
 ### TODO
-- update state machine graph in Drawio
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
-- implement motor functions (motorStop, motorOpen, motorClose).
 - (maybe) add additional switch when door is almost closed/open to trigger slower motor motion. Plus voltage divider with potentimeter ...
 - test with current RF kit. If not working, buy a new one (the current one is old as hell)
 - update transmitter.c with new commands (see receiver.c), change settings (F_CPU, address, SYNC)
@@ -37,5 +43,5 @@ and there's enough space. He'll lead the mechanics department ;)
 - door mechanism:
  + (obsolete) https://mechamechanisms.com/folding-door-controlled-by-cable
  + sliding door with "normal" door with lock to access buttons inside
- + electro magnetic key/lock with emergency manual release + implementation (lockRelease(), lockHold())
+ + electro magnetic key/lock with emergency manual release = Solenoid
 - put uC to sleep (power-down), wake up with interrupt (button pressed) => may need to change pin settings for buttons, since now INT0 and INT1 are already used. Or use pin change interrupt.

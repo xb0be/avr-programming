@@ -36,13 +36,19 @@ RF signal			- blue LED on
 #define MOTOR_IN2_PIN		PC5		//To motor's IN2
 #define LOCK_PIN			PC6		//Pin for electro magnetic lock (relay for it)
 
-//States definition
-//Define all states of the machine
+/*States definition
+ * Define all states of the machine
+ */
 #define CLOSED		1
 #define CLOSING		2
 #define OPEN		3
 #define OPENING		4
 #define ALARM		5
+#define LOCKED		6
+#define ONE			7
+#define TWO			8
+#define THREE		9
+#define IDLE		10
 
 #define BOUNCETIME	30						//Period for bounce in ms
 
