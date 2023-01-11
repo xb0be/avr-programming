@@ -31,6 +31,7 @@ and there's enough space. He'll lead the mechanics department ;)
 - drawio schematic updated, new PNG exported
 
 ### TODO
+- add transition from CLOSED to LOCKED (manual + timeout?)
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
 - (maybe) add additional switch when door is almost closed/open to trigger slower motor motion. Plus voltage divider with potentimeter ...
 - test with current RF kit. If not working, buy a new one (the current one is old as hell)
