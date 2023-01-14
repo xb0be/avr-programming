@@ -21,7 +21,7 @@ Simple schematics:
                       |         PC4 | ----> Motor IN1
  GND -------./ .----> | PB3     PC5 | ----> Motor IN2
              _        |             |
- GND ------. | .----> | PB4     PC6 | ----> Relay --- Electro magnetic lock (SOLENIDE)
+ GND ------. | .----> | PB4     PC6 | ----> Relay or MOSFET --- Electro magnetic lock (SOLENOID)
                       |_____________|
  Legend:
      _
@@ -39,27 +39,34 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
 #include <util/delay.h>
 #include "settings.h"
 
-volatile uint8_t extraTime;					//Init extraTime
-volatile uint8_t numOfAlarms;				//Number of alarms triggered
-volatile char state = LOCKED;				//Initial state is Closed
-volatile uint8_t count;						//Init of count variable for button deboucing
-volatile uint8_t buttonPressed;				//Flag for pressed button
-volatile uint8_t limit = 100;				//Used in button debounce ISR
-//volatile char RF;							//Flag, if we are coming to state machine from RF
+/* Variables list:
+ * state: initial state of the state machine
+ * extraTime: used in overflow ISR as counter when to change to the ALARM state
+ * alarmextraTime: used in overflow ISR as counter to trigger change to the LOCKED state
+ * limit: used in de-bounce ISR to count and compare number of bounces
+ * buttonPressed: flag, if de-bouncing is over and the button is pressed
+ * RF: flag, if we are coming from RF (remote control) - TBD
+ */
+volatile char state = LOCKED;
+//volatile uint8_t extraTime, alarmextraTime = 0;
+//volatile uint8_t count1, count2, count3, count4, count5 = 0;
+volatile uint8_t bpOpenButton, bpCloseButton, bpOpenSwitch, bpCloseSwitch, bpEmergencyButton = 0;
+//volatile uint8_t limit = 100;
+//volatile char RF; //TBD
 
 
 /* Declarations */
+void debounceTimerStart();
+void initTimer();
+void startTimer();
+void stopTimer();
+void restartTimer();
 void USART_Init();
 void motorOpen();
 void motorStop();
 void motorClose();
 void lock_solenoid();
 void unlock_solenoid();
-void debounceTimerStart();
-void initTimer();
-void startTimer();
-void stopTimer();
-void restartTimer();
 
 
 int main(void) {
@@ -72,13 +79,13 @@ int main(void) {
 	INPUT_PORT |= (1 << OPEN_SWITCH_PIN);		//enable pull-up resistor on button input
 	INPUT_REG &= ~(1 << CLOSE_SWITCH_PIN);		//set CLOSE_SWITCH_PIN as input for the button
 	INPUT_PORT |= (1 << CLOSE_SWITCH_PIN);		//enable pull-up resistor on button input
-	INPUT_REG &= ~(1 << MOTOR_STOP_PIN);		//set MOTOR_STOP_PIN as input for the button
-	INPUT_PORT |= (1 << MOTOR_STOP_PIN);		//enable pull-up resistor on button input	
+	INPUT_REG &= ~(1 << EMERGENCY_BTN_PIN);		//set MOTOR_STOP_PIN as input for the button
+	INPUT_PORT |= (1 << EMERGENCY_BTN_PIN);		//enable pull-up resistor on button input	
 	
 	debounceTimerStart();
 	initTimer();
-	//Part for receiver over UART - code is in receiver.c
-	USART_Init();
+	//Part for receiver over UART - code is in receiver.c TBD
+	//USART_Init(); TBD
 	sei();
 	
 	while(1)
@@ -87,87 +94,119 @@ int main(void) {
 		{
 			/*
 			 * In LOCKED state:
-			 * - turn off all the LEDs
+			 * - turn on all the LEDs (just for testing purpose)
 			 * - go through the ONE, TWO, and THREE states only after certain
-			 *   combination of pushbuttons was pressed (currently: Open, Open, Close, Close)
+			 *   combination of pushbuttons was pressed (currently: Open, Close, Open, Close)
+			 * - keep restarting Timeout timer in each state
 			 */
 			case LOCKED:
-				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {
-					startTimer();
+				//motorStop(); // do i need this here?
+				//OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+				//OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+				//OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
+				
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+					restartTimer();
 					state = ONE;
 				}
 				break;
 			case ONE:
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+				
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
 					restartTimer();
 					state = TWO;
 				}
 				break;
 			case TWO:
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
+				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+				
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
 					restartTimer();
 					state = THREE;
 				}
 				break;
 			case THREE:
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
+				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
+				
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
 					restartTimer();
 					state = IDLE;
 				}
 				break;
 			/*
 			 * In IDLE state:
-			 * - turn on the Power LED (TBD), signaling that system in unlocked and can be used
-			 * - stop the Timeout timer
-			 * - check the status of switches => if osmething weird is going on, go to ALARM state.
+			 * - turn on the Power LED (TBD), signaling that the system in unlocked and can be used
+			 * - check the status of the switches => if something weird is going on, go to the ALARM state.
 			 */							
 			case IDLE:
-				stopTimer();
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
+				
 				/* If the Open door switch is pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & buttonPressed) {
+				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & bpOpenSwitch) {
 					state = OPEN;
 				}
+				
 				/* If the Closed door switch is pressed */
-				else if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & buttonPressed) {
+				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & bpCloseSwitch) {
+					restartTimer();
 					state = CLOSED;
 				}
-				/* Anything else is an error => Alarm */
-				else {
-					state = ALARM;
+				
+				/* If the Open button was pressed */
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+					//unlock_solenoid();
+					restartTimer();
+					state = OPENING;
+				}
+				
+				/* If the Close button was pressed */
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+					restartTimer();
+					state = CLOSING;
 				}
 				break;
 			/*
 			 * In CLOSED state:
 			 * - turn on only the Closed LED, signaling the door is fully closed
 			 * - lock the Solenoid
-			 * - start the Timeout timer => if there's no Open pushbutton pressed,
-			 *   the state shall change to LOCKED (currently going through ALARM state twice)
-			 * - if the Open pushbutton was pressed
+			 *   the state shall change to LOCKED
+			 * - if the Open pushbutton was pressed:
 			 *   +  turn off the Closed LED
 			 *   + unlock the Solenoid
-			 *   + start the motor to open the door
-			 *   + start the Timeout timer
+			 *   + restart the Timeout timer
 			 *   + change the state to OPENING
 			 */
 			case CLOSED:
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-				lock_solenoid();
-				startTimer();
+				//lock_solenoid();
+
 				/* If the Open button was pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
 						OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-						unlock_solenoid();
-						motorOpen();
-						startTimer();
+						//unlock_solenoid();
+						restartTimer();
 						state = OPENING;
 				}
 				break;
 			case OPENING:
+				motorOpen();
+				
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -176,23 +215,23 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 												
 				/* If the Emergency button was pressed */
-				if ((!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) & buttonPressed) {
+				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & bpEmergencyButton) {
 						motorStop();
-						stopTimer();
+						//restartTimer();
 						state = ALARM;
 				}
 				
 				/* If the Close button was pressed, change state to CLOSING */
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
-						motorClose();
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
 						restartTimer();
+						motorClose();
 						state = CLOSING;
 				}
 				
 				/* If the Open door switch was hit */
-				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & buttonPressed) {
-						motorStop();
+				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & bpOpenSwitch) {
 						stopTimer();
+						motorStop();
 						state = OPEN;
 				}
 				
@@ -201,10 +240,10 @@ int main(void) {
 			/*
 			 * In OPEN state:
 			 * - turn on only the Open LED, signaling the door is fully open
-			 * - if the Close pushbutton is pressed
+			 * - if the Close pushbutton was pressed:
 			 *   - turn off the Open LED
 			 *   - start the motor to close the door
-			 *   - start the Timeout timer => if there's no Open switch hit after timeout,
+			 *   - restart the Timeout timer => if there's no Open switch hit after timeout,
 			 *     the state will change to ALARM
 			 *   - change the state to CLOSING
 			 */
@@ -213,15 +252,30 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
-				//If the Close button was pressed
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
+				/* If the Close button was pressed */
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
 						OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-						motorClose();
-						startTimer();
+						restartTimer();
 						state = CLOSING;
 				}
 				break;
+			/*
+			 * In CLOSING state:
+			 * - start the motor to close the door
+			 * - if the Emergency pushbutton was pressed:
+			 *	+ stop the motor
+			 *	+ stop the Timeout timer
+			 *	+ go to the ALARM state
+			 * - if the Open pushbutton was pressed:
+			 *	+ restart the Timeout timer
+			 *	+ go to the OPENING state
+			 * - if the Closed switch was hit:
+			 *	+ stop the motor
+			 *	+ stop the Timeout timer
+			 *	+ go to the CLOSED state
+			 */				
 			case CLOSING:
+				motorClose();
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -230,21 +284,20 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 												
 				/* If the Emergency button was pressed */
-				if ((!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) & buttonPressed) {
+				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & bpEmergencyButton) {
 						motorStop();
 						stopTimer();
 						state = ALARM;
 				}
 				
 				/* If the Open button was pressed, change state to OPENING */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {
-						motorOpen();
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
 						restartTimer();
 						state = OPENING;
 				}
 				
 				/* If the Closed door switch was hit */
-				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & buttonPressed) {
+				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & bpCloseSwitch) {
 						motorStop();
 						stopTimer();
 						state = CLOSED;
@@ -255,23 +308,35 @@ int main(void) {
 				/* If the Closed door switch was NOT hit */
 
 				break;
+			/*
+			 * In ALARM state:
+			 * - turn on only the Alarm LED, signaling there's something wrong
+			 * - stop the motor
+			 * - if the Close pushbutton was pressed:
+			 *   - turn off the Alarm LED
+			 *   - start the motor to close the door
+			 *   - restart the Timeout timer => if there's no Closed switch hit after timeout,
+			 *     the state will change back to ALARM
+			 *   - change the state to CLOSING
+			 * And similar for the Open pushbutton
+			 */
 			case ALARM:
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-				restartTimer();
+				motorStop();
 				
-				//If the Close button was pressed
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & buttonPressed) {
-						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
+				/* If the Close button was pressed */
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 						motorClose();
 						restartTimer();
 						state = CLOSING;
 				}
 				
-				//If the Open button was pressed
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & buttonPressed) {	
-						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);	//Turn off ALARM_LED_PIN
+				/* If the Open button was pressed */
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {	
+						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 						motorOpen();
 						restartTimer();
 						state = OPENING;
@@ -287,88 +352,127 @@ int main(void) {
  * Overflow vector for timeouts on 16-bit register.
  * Changed from 1024 pre-scaler to 256 (8 seconds -> 2 second).
  * Idea is to use this one also for LED blinking when in Opening or Closing state. (TBD)
- * Added numOfAlarms variable - if the overflow gets triggered more then once, the state
- * machine goes to LOCKED state.
+ * Added alarmextraTime variable to change to the LOCKED state after some more time.
  */
 ISR(TIMER1_OVF_vect)
 {
+	static uint8_t extraTime, alarmextraTime = 0;
 	extraTime++;
+	alarmextraTime++;
 	if (extraTime > 5) {
-		extraTime = 0;
-		numOfAlarms++;
-		if (numOfAlarms <= 2) {
-			state = ALARM;
-		} else {
+		if (alarmextraTime > 10) {
+			alarmextraTime = 0;
+			extraTime = 0;
+			stopTimer();
 			state = LOCKED;
+		} else {
+			restartTimer();
+			state = ALARM;
 		}
 	}
+	//extraTime++;
+	//if (extraTime > 5) {
+		//extraTime = 0;
+		//state = ALARM;
+	//}
+	//alarmextraTime++;
+	//if (alarmextraTime > 10) {
+		//alarmextraTime = 0;
+		//state = LOCKED;
+	//}	
 }
 /*
  * Compare vector for button de-bounce on 8-bit timer.
  * With limit = 100, we get 50 ms.
- * Implemented for:
- * - Open and Close push buttons
- * - Fully open and fully closed switches
- * - Emergency motor stop
  */
 ISR(TIMER0_COMPA_vect)
 {
+	static uint8_t count1, count2, count3, count4, count5 = 0;
+	static uint8_t limit = 100;
 	if (!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) {
-		count++;
-		if(count > limit) {
-			count = 0;
-			buttonPressed = 1;
+		count1++;
+		if (count1 > limit) {
+			count1 = 0;
+			bpCloseButton = 1;
 		} else {
-			buttonPressed = 0;
+			bpCloseButton = 0;
 		}	
+	} else {
+		if (count1 > 0) {
+			count1--;
+		}
 	}
 	if (!(INPUT_PIN & (1 << OPEN_BTN_PIN))) {
-		count++;
-		if(count > limit) {
-			count = 0;
-			buttonPressed = 1;
-			} else {
-			buttonPressed = 0;
+		count2++;
+		if (count2 > limit) {
+			count2 = 0;
+			bpOpenButton = 1;
+		} else {
+			bpOpenButton = 0;
+		}
+	} else {
+		if (count2 > 0) {
+			count2--;
 		}
 	}
 	if (!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) {
-		count++;
-		if(count > limit) {
-			count = 0;
-			buttonPressed = 1;
-			} else {
-			buttonPressed = 0;
+		count3++;
+		if (count3 > limit) {
+			count3 = 0;
+			bpOpenSwitch = 1;
+		} else {
+			bpOpenSwitch = 0;
+		}
+	} else {
+		if (count3 > 0) {
+			count3--;
 		}
 	}
 	if (!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) {
-		count++;
-		if(count > limit) {
-			count = 0;
-			buttonPressed = 1;
-			} else {
-			buttonPressed = 0;
+		count4++;
+		if (count4 > limit) {
+			count4 = 0;
+			bpCloseSwitch = 1;
+		} else {
+			bpCloseSwitch = 0;
+		}
+	} else {
+		if (count4 > 0) {
+			count4--;
 		}
 	}
-	if (!(INPUT_PIN & (1 << MOTOR_STOP_PIN))) {
-		count++;
-		if(count > limit) {
-			count = 0;
-			buttonPressed = 1;
-			} else {
-			buttonPressed = 0;
+	if (!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) {
+		count5++;
+		if (count5 > limit) {
+			count5 = 0;
+			bpEmergencyButton = 1;
+		} else {
+			bpEmergencyButton = 0;
+		}
+	} else {
+		if (count5 > 0) {
+			count5--;
 		}
 	}	
 }
 
 /*
-When we press the switch, the input pin is pulled to ground. Thus, we’re
-waiting for the pin to go low.
-The button is pressed when BUTTON1 bit is clear: if (!(PINB & (1<<BUTTON1)))
+ * When we press the switch, the input pin is pulled to ground. Thus, we’re
+ * waiting for the pin to go low.
+ * The button is pressed when BUTTON1 bit is clear: if (!(PINB & (1<<BUTTON1)))
+ 
+ 
+Debouncing is pretty straightforward, not sure why you're messing around so much.
 
-IN1		IN2		Motor Status
--------------------------------
-LOW		LOW		Stops
-LOW		HIGH	Clockwise
-HIGH	LOW		Anti-Clockwise
-HIGH	HIGH	Stops
-*/
+Make it easy:
+set up a timer irq that fires 200 times a sec
+in the irq check switch A
+if it is pressed:
+	increment countA, limit the count to 40 max
+else
+	decrement countA, don't let it go below zero
+
+Do the same thing for switch B (countB)
+ 
+in your main code  if countA is > 20 then the switch is pressed & do what you want likewise for B
+ */

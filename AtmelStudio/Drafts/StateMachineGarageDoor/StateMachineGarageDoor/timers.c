@@ -26,7 +26,7 @@ void debounceTimerStart() {
 	TCCR0A |= (1 << WGM01); 			//Set CTC mode
 	TCCR0B = (1 << CS01);				//Set 8 prescaler
 	TIMSK0 = (1 << OCIE0A);				//Timer/Counter0 Output Compare Match A Interrupt Enable
-	//sei();							//Will be set in next (initTimer) function
+	//sei();							//Will be set in main
 }
 
 /* Initialization of 16-bit timer, used for timeouts
