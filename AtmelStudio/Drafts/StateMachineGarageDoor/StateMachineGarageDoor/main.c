@@ -45,12 +45,8 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
  * RF: flag, if we are coming from RF (remote control) - TBD
  */
 volatile char state = LOCKED;
-//volatile uint8_t extraTime, alarmextraTime = 0;
-//volatile uint8_t count1, count2, count3, count4, count5 = 0;
 volatile uint8_t bpOpenButton, bpCloseButton, bpOpenSwitch, bpCloseSwitch, bpEmergencyButton = 0;
-//volatile uint8_t limit = 100;
 //volatile char RF; //TBD
-
 
 /* Declarations */
 void debounceTimerStart();
@@ -64,7 +60,6 @@ void motorStop();
 void motorClose();
 void lock_solenoid();
 void unlock_solenoid();
-
 
 int main(void) {
 	OUTPUT_REG = 0xff; 							//LEDs and motor (output)
@@ -197,12 +192,15 @@ int main(void) {
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
 						OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 						//unlock_solenoid();
+						motorOpen();
 						restartTimer();
 						state = OPENING;
 				}
 				break;
 			case OPENING:
-				motorOpen();
+				//motorOpen();
+				//_delay_ms(500);		/* Delay, let the door pass over the lock */
+				//lock_solenoid();	/* And now it can be released again */
 				
 				/* If the timeout appears, interrupt will handle it */
 				
@@ -252,13 +250,14 @@ int main(void) {
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
 						OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+						motorClose();
 						restartTimer();
 						state = CLOSING;
 				}
 				break;
 			/*
 			 * In CLOSING state:
-			 * - start the motor to close the door
+			 * - start the motor to close the door //!!!!!! no, this is done in previous state
 			 * - if the Emergency pushbutton was pressed:
 			 *	+ stop the motor
 			 *	+ stop the Timeout timer
@@ -272,7 +271,7 @@ int main(void) {
 			 *	+ go to the CLOSED state
 			 */				
 			case CLOSING:
-				motorClose();
+				//motorClose();
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -282,15 +281,16 @@ int main(void) {
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & bpEmergencyButton) {
-						motorStop();
-						stopTimer();
-						state = ALARM;
+					motorStop();
+					stopTimer();
+					state = ALARM;
 				}
 				
 				/* If the Open button was pressed, change state to OPENING */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
-						restartTimer();
-						state = OPENING;
+					restartTimer();
+					motorOpen();
+					state = OPENING;
 				}
 				
 				/* If the Closed door switch was hit */
@@ -321,7 +321,7 @@ int main(void) {
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-				motorStop();
+				//motorStop();
 				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
@@ -360,9 +360,11 @@ ISR(TIMER1_OVF_vect)
 		if (alarmextraTime > 10) {
 			alarmextraTime = 0;
 			extraTime = 0;
+			motorStop();
 			stopTimer();
 			state = LOCKED;
 		} else {
+			motorStop();
 			restartTimer();
 			state = ALARM;
 		}

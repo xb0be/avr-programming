@@ -13,10 +13,10 @@
 
 void unlock_solenoid() {
 	OUTPUT_PORT |= (1 << LOCK_PIN);
-	_delay_ms(200);								//Wait a little bit before starting a motor
+	//_delay_ms(200);					/* Solve this in main. Wait a little bit before starting a motor */
 }
 
 void lock_solenoid() {
-	_delay_ms(200);								//Wait a little bit before locking
+	//_delay_ms(200);					/* Solve this in main. Wait a little bit before locking */
 	OUTPUT_PORT &= ~(1 << LOCK_PIN);
 }
