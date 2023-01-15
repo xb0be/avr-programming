@@ -9,8 +9,9 @@
 #define INPUT_PIN			PINB	//Pin for inputs
 #define OUTPUT_PIN			PORTC	//Pin for outputs
 
-/* Buttons		 						- ################ INPUTS ################ */
-/* Pins for push buttons to trigger opening or closing the door */
+/* Buttons		 						- ################ INPUTS ################
+ * Pins for push buttons to trigger opening or closing the door
+ */
 #define OPEN_BTN_PIN		PB0		//Brown wire
 #define CLOSE_BTN_PIN		PB1		//Green wire
 

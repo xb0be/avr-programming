@@ -16,12 +16,12 @@ Simple schematics:
                       |             | 
                       |         PC2 | ----> 4k7 --- Red LED (alarm)
                       |             | 					  
-                      |         PC3 | ----> 4k7 --- Blue LED (RF)				  
+                      |         PC6 | ----> 4k7 --- Blue LED (RF)				  
  GND -------./ .----> | PB2         |
-                      |         PC4 | ----> Motor IN1
- GND -------./ .----> | PB3     PC5 | ----> Motor IN2
+                      |         PC3 | ----> Motor IN1
+ GND -------./ .----> | PB3     PC4 | ----> Motor IN2
              _        |             |
- GND ------. | .----> | PB4     PC6 | ----> Relay or MOSFET --- Electro magnetic lock (SOLENOID)
+ GND ------. | .----> | PB4     PC5 | ----> Relay or MOSFET --- Electro magnetic lock (SOLENOID)
                       |_____________|
  Legend:
      _
@@ -41,10 +41,7 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
 
 /* Variables list:
  * state: initial state of the state machine
- * extraTime: used in overflow ISR as counter when to change to the ALARM state
- * alarmextraTime: used in overflow ISR as counter to trigger change to the LOCKED state
- * limit: used in de-bounce ISR to count and compare number of bounces
- * buttonPressed: flag, if de-bouncing is over and the button is pressed
+ * bpXXXX: true, if a certain button is pressed and debounced
  * RF: flag, if we are coming from RF (remote control) - TBD
  */
 volatile char state = LOCKED;
@@ -299,7 +296,7 @@ int main(void) {
 				/* If the Closed door switch was hit */
 				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & bpCloseSwitch) {
 						motorStop();
-						stopTimer();
+						restartTimer();				/* In CLOSED, go to the LOCKED state after some time */
 						state = CLOSED;
 				}
 				
@@ -370,19 +367,10 @@ ISR(TIMER1_OVF_vect)
 			state = ALARM;
 		}
 	}
-	//extraTime++;
-	//if (extraTime > 5) {
-		//extraTime = 0;
-		//state = ALARM;
-	//}
-	//alarmextraTime++;
-	//if (alarmextraTime > 10) {
-		//alarmextraTime = 0;
-		//state = LOCKED;
-	//}	
 }
 /*
- * Compare vector for button de-bounce on 8-bit timer.
+ * This one is a little bit clumsy :/
+ * Compare vector for button debounce on 8-bit timer.
  * With limit = 100, we get 50 ms.
  */
 ISR(TIMER0_COMPA_vect)
