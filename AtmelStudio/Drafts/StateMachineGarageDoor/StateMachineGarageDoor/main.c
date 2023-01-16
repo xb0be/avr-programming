@@ -190,11 +190,11 @@ int main(void) {
 
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
-						OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-						//unlock_solenoid();
-						motorOpen();
-						restartTimer();
-						state = OPENING;
+					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+					//unlock_solenoid();
+					motorOpen();
+					restartTimer();
+					state = OPENING;
 				}
 				break;
 			case OPENING:
@@ -211,23 +211,23 @@ int main(void) {
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & bpEmergencyButton) {
-						motorStop();
-						//restartTimer();
-						state = ALARM;
+					motorStop();
+					//restartTimer();
+					state = ALARM;
 				}
 				
 				/* If the Close button was pressed, change state to CLOSING */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
-						restartTimer();
-						motorClose();
-						state = CLOSING;
+					restartTimer();
+					motorClose();
+					state = CLOSING;
 				}
 				
 				/* If the Open door switch was hit */
 				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & bpOpenSwitch) {
-						stopTimer();
-						motorStop();
-						state = OPEN;
+					stopTimer();
+					motorStop();
+					state = OPEN;
 				}
 				
 				/* If the open door switch was NOT hit TBD */
@@ -249,10 +249,10 @@ int main(void) {
 				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
-						OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-						motorClose();
-						restartTimer();
-						state = CLOSING;
+					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
+					motorClose();
+					restartTimer();
+					state = CLOSING;
 				}
 				break;
 			/*
@@ -295,9 +295,9 @@ int main(void) {
 				
 				/* If the Closed door switch was hit */
 				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & bpCloseSwitch) {
-						motorStop();
-						restartTimer();				/* In CLOSED, go to the LOCKED state after some time */
-						state = CLOSED;
+					motorStop();
+					restartTimer();				/* In CLOSED, go to the LOCKED state after some time */
+					state = CLOSED;
 				}
 				
 				/* if photo-eye blocked */
@@ -325,18 +325,18 @@ int main(void) {
 				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
-						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-						motorClose();
-						restartTimer();
-						state = CLOSING;
+					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+					motorClose();
+					restartTimer();
+					state = CLOSING;
 				}
 				
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {	
-						OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-						motorOpen();
-						restartTimer();
-						state = OPENING;
+					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+					motorOpen();
+					restartTimer();
+					state = OPENING;
 				}
 				break;			
 			default:

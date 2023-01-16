@@ -1,4 +1,13 @@
 # Changelog
+2023-01-16
+Lots of changes, fixes in the last week. Mainly:
+- fixed the ALARM and LOCKED state transitions
+- code formatting fixed
+- tested logic with LEDs on outputs, where the motor and the solenoid will be connected
+- tried to run the motor with some old L298, didn't work, as it's really ancient
+- learned about power supplies, namely L7805, put together electronic parts to solder them in the future
+- tried a spare ATX power supply, which provides 12 V and 5 V, works fine nd s powerful enough
+
 2023-01-11
 - added new states to the state machine (see PNG) for poor man's security
 - updated drawio and PNG commited
