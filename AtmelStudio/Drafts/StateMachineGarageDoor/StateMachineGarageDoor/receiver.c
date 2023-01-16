@@ -1,7 +1,7 @@
 /*
 Code taken from:
 https://www.youtube.com/watch?v=4TPwvxCTS4I
-https://drive.google.com/drive/folders/1G8QLIVCWlWAjIYiDAR0_j9Lhmxq-QTzu
+ https://drive.google.com/drive/folders/1G8QLIVCWlWAjIYiDAR0_j9Lhmxq-QTzu
 Code for Receiver Model: XY-MK-5V Transmitting Frequency: 433.92MHz
 */
 #ifndef F_CPU
