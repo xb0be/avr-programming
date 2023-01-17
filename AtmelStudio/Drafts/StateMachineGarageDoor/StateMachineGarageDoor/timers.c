@@ -26,16 +26,21 @@
  * So for 500 us time period, we get:
  * C=(8000000*0.0005/2*8)-1 = 249
  *
- * So with 256 pre-scaler and OCR0A = 15, we get 1kHZ or 1 ms square wave time period.
+ * So with 256 pre-scaler_
+ * OCR0A = 15 => we get 1 ms square wave time period
+ * OCR0B = 255 => we get 16 ms square wave time period
+ * TIMSK0 = (1 << OCIE0B); HAS TO BE RUN AFTER THE LOCK IS PULLED AND HOLD UNTIL COMPARE MATCH (~4 seconds)
+ * This will be set in unlock_solenoid() and unset WHERE???
  */
 void debounceTimerStart() {
-	//OCR0A = 249;						//See formula above
-	OCR0A = 15;						//See formula above
-	//OCR0B = ?; //TBD
+	//OCR0A = 249;
+	OCR0A = 15;
+	OCR0B = 255;
 	TCCR0A |= (1 << WGM01); 			//Set CTC mode
 	//TCCR0B = (1 << CS01);				//Set 8 prescaler
 	TCCR0B = (1 << CS02);				//Set 256 prescaler
 	TIMSK0 = (1 << OCIE0A);				//Timer/Counter0 Output Compare Match A Interrupt Enable
+	//TIMSK0 = (1 << OCIE0B);			//Timer/Counter0 Output Compare Match B Interrupt Enable
 	//sei();							//Will be set in main
 }
 
