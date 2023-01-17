@@ -4,7 +4,12 @@
 #include "settings.h"
 
 
-/* Set up 8-bit timer for debounce interrupt
+/* Set up 8-bit timer
+ * OCR0A is used for debounce interrupt for all buttons
+ * OCR0B is used for releasing the lock (after it's held in transition from CLOSED to OPENING
+ * so I don't need another switch/signal for when to release it).
+ * Because it has to be kept unlocked for some time, so the door starts to open and do some progress.
+ 
  * The formula to calculate value of count to be loaded in OCR0A register (or OCR0B register) is:
  * C=(Fclk/2*N*Fw)-1 where:
  * - Fclk is the microcontroller CPU clock frequency
@@ -20,11 +25,16 @@
  * 
  * So for 500 us time period, we get:
  * C=(8000000*0.0005/2*8)-1 = 249
+ *
+ * So with 256 pre-scaler and OCR0A = 15, we get 1kHZ or 1 ms square wave time period.
  */
 void debounceTimerStart() {
-	OCR0A = 249;						//See formula above
+	//OCR0A = 249;						//See formula above
+	OCR0A = 15;						//See formula above
+	//OCR0B = ?; //TBD
 	TCCR0A |= (1 << WGM01); 			//Set CTC mode
-	TCCR0B = (1 << CS01);				//Set 8 prescaler
+	//TCCR0B = (1 << CS01);				//Set 8 prescaler
+	TCCR0B = (1 << CS02);				//Set 256 prescaler
 	TIMSK0 = (1 << OCIE0A);				//Timer/Counter0 Output Compare Match A Interrupt Enable
 	//sei();							//Will be set in main
 }

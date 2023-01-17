@@ -192,6 +192,7 @@ int main(void) {
 					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 					//unlock_solenoid();
 					motorOpen();
+					/* Start a timer for TIMER0_COMPB_vect ??? TBC*/
 					restartTimer();
 					state = OPENING;
 				}
@@ -352,12 +353,27 @@ int main(void) {
  */
 ISR(TIMER1_OVF_vect)
 {
-	static uint8_t extraTime, alarmextraTime = 0;
+	//static uint8_t extraTime, alarmextraTime = 0;
+	//extraTime++;
+	//alarmextraTime++;
+	//if (extraTime > 5) {
+		//if (alarmextraTime > 10) {
+			//alarmextraTime = 0;
+			//extraTime = 0;
+			//motorStop();
+			//stopTimer();
+			//state = LOCKED;
+		//} else {
+			//motorStop();
+			//restartTimer();
+			//state = ALARM;
+		//}
+	//}
+	/* Can be done with just one variable ... */
+	static uint8_t extraTime = 0;
 	extraTime++;
-	alarmextraTime++;
 	if (extraTime > 5) {
-		if (alarmextraTime > 10) {
-			alarmextraTime = 0;
+		if (extraTime > 10) {
 			extraTime = 0;
 			motorStop();
 			stopTimer();
@@ -367,17 +383,19 @@ ISR(TIMER1_OVF_vect)
 			restartTimer();
 			state = ALARM;
 		}
-	}
+	}	
 }
 /*
  * This one is a little bit clumsy :/
  * Compare vector for button debounce on 8-bit timer.
  * With limit = 100, we get 50 ms.
+ * Because of change in timetrs.c, where frequency is now 1kHz (1 ms of delay),
+ * the limit value has to be adjusted. So 1 means 1 ms.
  */
 ISR(TIMER0_COMPA_vect)
 {
 	static uint8_t count1, count2, count3, count4, count5 = 0;
-	static uint8_t limit = 100;
+	static uint8_t limit = 40;
 	if (!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) {
 		count1++;
 		if (count1 > limit) {
