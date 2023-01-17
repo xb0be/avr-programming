@@ -6,7 +6,7 @@
 
 /* Set up 8-bit timer for debounce interrupt
  * The formula to calculate value of count to be loaded in OCR0A register (or OCR0B register) is:
- * C=(Fclk/2*N*Fw)?1 where:
+ * C=(Fclk/2*N*Fw)-1 where:
  * - Fclk is the microcontroller CPU clock frequency
  * - N is the pre-scalar value and
  * - Fw is the output wave frequency
@@ -14,7 +14,7 @@
  * The above equation can be rewritten in the following form where we use the output square wave time period(Tw)
  * instead of the frequency(Fw).
  * 
- * C=(Fclk*Tw/2*N)?1
+ * C=(Fclk*Tw/2*N)-1
  * For example, if we want to create square wave signal with time period of Tw=100 us, we get:
  * C=(8000000*0.0001/2*8)-1 = 49 
  * 

@@ -92,7 +92,6 @@ int main(void) {
 			 * - keep restarting Timeout timer in each state
 			 */
 			case LOCKED:
-				//motorStop(); // do i need this here?
 				//OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				//OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				//OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
