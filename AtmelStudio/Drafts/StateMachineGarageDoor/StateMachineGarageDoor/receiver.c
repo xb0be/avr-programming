@@ -13,7 +13,7 @@ Code for Receiver Model: XY-MK-5V Transmitting Frequency: 433.92MHz
 //#include <util/delay.h>
 #include "settings.h"
 
-volatile char state;						//Needed to update the state machine
+extern volatile char state;						//Needed to update the state machine
 volatile char RF = 0;						//Flag, if we are coming to state machine from RF
 
 //Initializing UART

@@ -45,8 +45,9 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
  * RF: flag, if we are coming from RF (remote control) - TBD
  */
 volatile char state = LOCKED;
-volatile uint8_t bpOpenButton, bpCloseButton, bpOpenSwitch, bpCloseSwitch, bpEmergencyButton = 0;
-//volatile char RF; //TBD
+volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, cntEmergencyButton = 0;
+uint8_t chkLimit = 30;
+//extern volatile char RF; //TBD
 
 /* Declarations */
 void debounceTimerStart();
@@ -77,7 +78,7 @@ int main(void) {
 	debounceTimerStart();
 	initTimer();
 	//Part for receiver over UART - code is in receiver.c TBD
-	//USART_Init(); TBD
+	//USART_Init(); //TBD
 	sei();
 	
 	while(1)
@@ -92,7 +93,6 @@ int main(void) {
 			 * - keep restarting Timeout timer in each state
 			 */
 			case LOCKED:
-				//motorStop(); // do i need this here?
 				//OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				//OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				//OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
@@ -100,7 +100,7 @@ int main(void) {
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					restartTimer();
 					state = ONE;
 				}
@@ -110,7 +110,7 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					restartTimer();
 					state = TWO;
 				}
@@ -120,7 +120,7 @@ int main(void) {
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					restartTimer();
 					state = THREE;
 				}
@@ -130,7 +130,7 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					restartTimer();
 					state = IDLE;
 				}
@@ -146,26 +146,26 @@ int main(void) {
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				
 				/* If the Open door switch is pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & bpOpenSwitch) {
+				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
 					state = OPEN;
 				}
 				
 				/* If the Closed door switch is pressed */
-				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & bpCloseSwitch) {
+				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & (cntCloseSwitch > chkLimit)) {
 					restartTimer();
 					state = CLOSED;
 				}
 				
 				/* If the Open button was pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-					//unlock_solenoid();
+					//unlock_solenoid();		// TBD - SHALL BE ADDED HERE???
 					restartTimer();
 					state = OPENING;
 				}
 				
 				/* If the Close button was pressed */
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 					restartTimer();
 					state = CLOSING;
@@ -186,22 +186,18 @@ int main(void) {
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-				//lock_solenoid();
 
 				/* If the Open button was pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-					//unlock_solenoid();
+					unlock_solenoid();
 					motorOpen();
+					/* Start a timer for TIMER0_COMPB_vect ??? TBC*/
 					restartTimer();
 					state = OPENING;
 				}
 				break;
-			case OPENING:
-				//motorOpen();
-				//_delay_ms(500);		/* Delay, let the door pass over the lock */
-				//lock_solenoid();	/* And now it can be released again */
-				
+			case OPENING:				
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -210,21 +206,21 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 												
 				/* If the Emergency button was pressed */
-				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & bpEmergencyButton) {
+				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					motorStop();
 					//restartTimer();
 					state = ALARM;
 				}
 				
 				/* If the Close button was pressed, change state to CLOSING */
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					restartTimer();
 					motorClose();
 					state = CLOSING;
 				}
 				
 				/* If the Open door switch was hit */
-				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & bpOpenSwitch) {
+				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
 					stopTimer();
 					motorStop();
 					state = OPEN;
@@ -248,7 +244,7 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
 				/* If the Close button was pressed */
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 					motorClose();
 					restartTimer();
@@ -280,21 +276,21 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 												
 				/* If the Emergency button was pressed */
-				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & bpEmergencyButton) {
+				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					motorStop();
 					stopTimer();
 					state = ALARM;
 				}
 				
 				/* If the Open button was pressed, change state to OPENING */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					restartTimer();
 					motorOpen();
 					state = OPENING;
 				}
 				
 				/* If the Closed door switch was hit */
-				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & bpCloseSwitch) {
+				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & (cntCloseSwitch > chkLimit)) {
 					motorStop();
 					restartTimer();				/* In CLOSED, go to the LOCKED state after some time */
 					state = CLOSED;
@@ -324,7 +320,7 @@ int main(void) {
 				//motorStop();
 				
 				/* If the Close button was pressed */
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & bpCloseButton) {
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 					motorClose();
 					restartTimer();
@@ -332,7 +328,7 @@ int main(void) {
 				}
 				
 				/* If the Open button was pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & bpOpenButton) {	
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {	
 					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 					motorOpen();
 					restartTimer();
@@ -353,12 +349,27 @@ int main(void) {
  */
 ISR(TIMER1_OVF_vect)
 {
-	static uint8_t extraTime, alarmextraTime = 0;
+	//static uint8_t extraTime, alarmextraTime = 0;
+	//extraTime++;
+	//alarmextraTime++;
+	//if (extraTime > 5) {
+		//if (alarmextraTime > 10) {
+			//alarmextraTime = 0;
+			//extraTime = 0;
+			//motorStop();
+			//stopTimer();
+			//state = LOCKED;
+		//} else {
+			//motorStop();
+			//restartTimer();
+			//state = ALARM;
+		//}
+	//}
+	/* Can be done with just one variable and double the time */
+	static uint8_t extraTime = 0;
 	extraTime++;
-	alarmextraTime++;
 	if (extraTime > 5) {
-		if (alarmextraTime > 10) {
-			alarmextraTime = 0;
+		if (extraTime > 10) {
 			extraTime = 0;
 			motorStop();
 			stopTimer();
@@ -368,83 +379,77 @@ ISR(TIMER1_OVF_vect)
 			restartTimer();
 			state = ALARM;
 		}
-	}
+	}	
 }
 /*
  * This one is a little bit clumsy :/
  * Compare vector for button debounce on 8-bit timer.
  * With limit = 100, we get 50 ms.
+ * Because of change in timetrs.c, where frequency is now 1kHz (1 ms of delay),
+ * the limit value has to be adjusted. So 1 means 1 ms.
  */
 ISR(TIMER0_COMPA_vect)
 {
-	static uint8_t count1, count2, count3, count4, count5 = 0;
-	static uint8_t limit = 100;
+	static uint8_t cntLimit = 50;
+
 	if (!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) {
-		count1++;
-		if (count1 > limit) {
-			count1 = 0;
-			bpCloseButton = 1;
-		} else {
-			bpCloseButton = 0;
+		cntCloseButton++;
+		if (cntCloseButton > cntLimit) {
+			cntCloseButton = 0;
 		}	
 	} else {
-		if (count1 > 0) {
-			count1--;
+		if (cntCloseButton > 0) {
+			cntCloseButton--;
 		}
 	}
 	if (!(INPUT_PIN & (1 << OPEN_BTN_PIN))) {
-		count2++;
-		if (count2 > limit) {
-			count2 = 0;
-			bpOpenButton = 1;
-		} else {
-			bpOpenButton = 0;
+		cntOpenButton++;
+		if (cntOpenButton > cntLimit) {
+			cntOpenButton = 0;
 		}
 	} else {
-		if (count2 > 0) {
-			count2--;
+		if (cntOpenButton > 0) {
+			cntOpenButton--;
 		}
 	}
 	if (!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) {
-		count3++;
-		if (count3 > limit) {
-			count3 = 0;
-			bpOpenSwitch = 1;
-		} else {
-			bpOpenSwitch = 0;
+		cntOpenSwitch++;
+		if (cntOpenSwitch > cntLimit) {
+			cntOpenSwitch = 0;
 		}
 	} else {
-		if (count3 > 0) {
-			count3--;
+		if (cntOpenSwitch > 0) {
+			cntOpenSwitch--;
 		}
 	}
 	if (!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) {
-		count4++;
-		if (count4 > limit) {
-			count4 = 0;
-			bpCloseSwitch = 1;
-		} else {
-			bpCloseSwitch = 0;
+		cntCloseSwitch++;
+		if (cntCloseSwitch > cntLimit) {
+			cntCloseSwitch = 0;
 		}
 	} else {
-		if (count4 > 0) {
-			count4--;
+		if (cntCloseSwitch > 0) {
+			cntCloseSwitch--;
 		}
 	}
 	if (!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) {
-		count5++;
-		if (count5 > limit) {
-			count5 = 0;
-			bpEmergencyButton = 1;
-		} else {
-			bpEmergencyButton = 0;
+		cntEmergencyButton++;
+		if (cntEmergencyButton > cntLimit) {
+			cntEmergencyButton = 0;
 		}
 	} else {
-		if (count5 > 0) {
-			count5--;
+		if (cntEmergencyButton > 0) {
+			cntEmergencyButton--;
 		}
 	}	
 }
+
+ISR(TIMER0_COMPB_vect)
+{
+	lock_solenoid();
+	TIMSK0 &= ~(1 << OCIE0B);			/* Disable the Output Compare Match B Interrupt */
+}
+
 
 /*
  * When we press the switch, the input pin is pulled to ground. Thus, we’re
