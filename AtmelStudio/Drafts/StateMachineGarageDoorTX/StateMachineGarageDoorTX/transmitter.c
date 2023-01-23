@@ -45,10 +45,10 @@ void Send_Packet(uint8_t addr, uint8_t cmd)
 
 // The function returns a boolean value indicating whether or not the button was pressed
 unsigned char buttonPressed(unsigned char BUTTON){
-	if (!(PIND & (1 << BUTTON)))			//The button is pressed when BUTTON bit is clear 
+	if (!(INPUT_PIN & (1 << BUTTON)))			//The button is pressed when BUTTON bit is clear 
 	{
 		_delay_ms(BOUNCETIME);				//Time to wait while "de-bouncing" button
-		if (!(PIND & (1 << BUTTON))){		//Check the state of the button again
+		if (!(INPUT_PIN & (1 << BUTTON))){		//Check the state of the button again
 			return 1;
 		}
 	}
@@ -57,13 +57,13 @@ unsigned char buttonPressed(unsigned char BUTTON){
 
 int main(void)
 {
-	DDRC = 0xff; 							//LEDs on PORTC as output
-	DDRD &= ~(1 << OPEN_BTN_PIN);			//set OPEN_BTN_PIN as input for the button
-	PORTD |= (1 << OPEN_BTN_PIN);			//enable pull-up resistor on button input
-	DDRD &= ~(1 << CLOSE_BTN_PIN);			//set CLOSE_BTN_PIN as input for the button
-	PORTD |= (1 << CLOSE_BTN_PIN);			//enable pull-up resistor on button input
-	DDRD &= ~(1 << MOTOR_STOP_BTN_PIN);			//set CLOSE_SWITCH_PIN as input for the button
-	PORTD |= (1 << MOTOR_STOP_BTN_PIN);			//enable pull-up resistor on button input
+	OUTPUT_REG = 0xff; 							//LEDs on PORTC as output
+	INPUT_REG &= ~(1 << OPEN_BTN_PIN);			//set OPEN_BTN_PIN as input for the button
+	INPUT_PORT |= (1 << OPEN_BTN_PIN);			//enable pull-up resistor on button input
+	INPUT_REG &= ~(1 << CLOSE_BTN_PIN);			//set CLOSE_BTN_PIN as input for the button
+	INPUT_PORT |= (1 << CLOSE_BTN_PIN);			//enable pull-up resistor on button input
+	INPUT_REG &= ~(1 << MOTOR_STOP_BTN_PIN);			//set CLOSE_SWITCH_PIN as input for the button
+	INPUT_PORT |= (1 << MOTOR_STOP_BTN_PIN);			//enable pull-up resistor on button input
 
 	char state = IDLE;						//Initial state is IDLE
 	USART_Init();
@@ -73,40 +73,40 @@ int main(void)
 		switch (state){
 			case IDLE:
 				if (buttonPressed(OPEN_BTN_PIN)){		//if Open button was pressed
-					PORTC |= (1 << RF_LED_PIN);			//turn on the RF LED
-					PORTC |= (1 << OPEN_LED_PIN);		//turn on the Open LED
+					OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn on the RF LED
+					OUTPUT_PORT |= (1 << OPEN_LED_PIN);		//turn on the Open LED
 					Send_Packet(RADDR, OPEN_CMD);		//send Open cmd
 					state = OPENING;					//switch state
 				}
 				if (buttonPressed(CLOSE_BTN_PIN)){		//if Close button was pressed
-					PORTC |= (1 << RF_LED_PIN);			//turn on the RF LED
-					PORTC |= (1 << CLOSE_LED_PIN);		//turn on the Close LED					
+					OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn on the RF LED
+					OUTPUT_PORT |= (1 << CLOSE_LED_PIN);		//turn on the Close LED					
 					Send_Packet(RADDR, CLOSE_CMD);		//send Close cmd
 					state = CLOSING;					//switch state					
 				}				
 				if (buttonPressed(MOTOR_STOP_BTN_PIN)){		//if Stop motor button was pressed
-					PORTC |= (1 << RF_LED_PIN);			//turn on the RF LED
-					PORTC |= (1 << MOTOR_STOP_LED_PIN);	//turn on the Stop motor LED					
+					OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn on the RF LED
+					OUTPUT_PORT |= (1 << MOTOR_STOP_LED_PIN);	//turn on the Stop motor LED					
 					Send_Packet(RADDR, MOTOR_STOP_CMD);	//send Stop motor cmd
 					state = STOPPING;					//switch state					
 				}				
 				break;
 			case OPENING:
 				_delay_ms(WAIT_TIME);					//wait a little bit
-				PORTC &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				PORTC &= ~(1 << OPEN_LED_PIN);
+				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
+				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				state = IDLE;
 				break;
 			case CLOSING:
 				_delay_ms(WAIT_TIME);					//wait a little bit
-				PORTC &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				PORTC &= ~(1 << CLOSE_LED_PIN);
+				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
+				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 				state = IDLE;
 				break;
 			case STOPPING:
 				_delay_ms(WAIT_TIME);					//wait a little bit
-				PORTC &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				PORTC &= ~(1 << MOTOR_STOP_LED_PIN);
+				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
+				OUTPUT_PORT &= ~(1 << MOTOR_STOP_LED_PIN);
 				state = IDLE;
 				break;
 			default:

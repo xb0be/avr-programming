@@ -45,6 +45,7 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
  * RF: flag, if we are coming from RF (remote control) - TBD
  */
 volatile char state = LOCKED;
+volatile uint8_t extraTime, alarmextraTime = 0;
 volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, cntEmergencyButton = 0;
 uint8_t chkLimit = 30;
 //volatile char RF; //TBD
@@ -78,7 +79,7 @@ int main(void) {
 	debounceTimerStart();
 	initTimer();
 	//Part for receiver over UART - code is in receiver.c TBD
-	//USART_Init(); TBD
+	USART_Init();
 	sei();
 	
 	while(1)
@@ -99,7 +100,7 @@ int main(void) {
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
-				
+				motorStop();
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					restartTimer();
 					state = ONE;
@@ -190,14 +191,15 @@ int main(void) {
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-					unlock_solenoid();
-					motorOpen();
+					//unlock_solenoid();
+					//bob motorOpen();
 					/* Start a timer for TIMER0_COMPB_vect ??? TBC*/
 					restartTimer();
 					state = OPENING;
 				}
 				break;
-			case OPENING:				
+			case OPENING:
+				motorOpen();
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -207,15 +209,15 @@ int main(void) {
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					motorStop();
-					//restartTimer();
+					//bob motorStop();
+					restartTimer();
 					state = ALARM;
 				}
 				
 				/* If the Close button was pressed, change state to CLOSING */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					restartTimer();
-					motorClose();
+					//bob motorClose();
 					state = CLOSING;
 				}
 				
@@ -233,7 +235,7 @@ int main(void) {
 			 * - turn on only the Open LED, signaling the door is fully open
 			 * - if the Close pushbutton was pressed:
 			 *   - turn off the Open LED
-			 *   - start the motor to close the door
+			 *   //- start the motor to close the door
 			 *   - restart the Timeout timer => if there's no Open switch hit after timeout,
 			 *     the state will change to ALARM
 			 *   - change the state to CLOSING
@@ -246,16 +248,16 @@ int main(void) {
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-					motorClose();
+					//bob motorClose();
 					restartTimer();
 					state = CLOSING;
 				}
 				break;
 			/*
 			 * In CLOSING state:
-			 * - start the motor to close the door //!!!!!! no, this is done in previous state
+			 * - start the motor to close the door
 			 * - if the Emergency pushbutton was pressed:
-			 *	+ stop the motor
+			 *	//+ stop the motor => this is done in ALARM
 			 *	+ stop the Timeout timer
 			 *	+ go to the ALARM state
 			 * - if the Open pushbutton was pressed:
@@ -267,7 +269,7 @@ int main(void) {
 			 *	+ go to the CLOSED state
 			 */				
 			case CLOSING:
-				//motorClose();
+				motorClose(); //bob
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -277,7 +279,7 @@ int main(void) {
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					motorStop();
+					//bob motorStop();
 					stopTimer();
 					state = ALARM;
 				}
@@ -285,7 +287,7 @@ int main(void) {
 				/* If the Open button was pressed, change state to OPENING */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					restartTimer();
-					motorOpen();
+					//bob motorOpen();
 					state = OPENING;
 				}
 				
@@ -307,7 +309,7 @@ int main(void) {
 			 * - stop the motor
 			 * - if the Close pushbutton was pressed:
 			 *   - turn off the Alarm LED
-			 *   - start the motor to close the door
+			 *   //- start the motor to close the door
 			 *   - restart the Timeout timer => if there's no Closed switch hit after timeout,
 			 *     the state will change back to ALARM
 			 *   - change the state to CLOSING
@@ -317,12 +319,14 @@ int main(void) {
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-				//motorStop();
+				motorStop(); //bob
 				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-					motorClose();
+					//bob motorClose();
+					//extraTime = 0;
+					//alarmextraTime = 0;
 					restartTimer();
 					state = CLOSING;
 				}
@@ -330,8 +334,10 @@ int main(void) {
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {	
 					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-					motorOpen();
+					//bob motorOpen();
 					restartTimer();
+					//extraTime = 0;
+					//alarmextraTime = 0;
 					state = OPENING;
 				}
 				break;			
@@ -350,11 +356,26 @@ int main(void) {
 ISR(TIMER1_OVF_vect)
 {
 	//static uint8_t extraTime, alarmextraTime = 0;
+	extraTime++;
+	alarmextraTime++;
+	if (extraTime > 5) {
+		if (alarmextraTime > 10) {
+			alarmextraTime = 0;
+			extraTime = 0;
+			motorStop();
+			stopTimer();
+			state = LOCKED;
+		} else {
+			motorStop();
+			//restartTimer();
+			state = ALARM;
+		}
+	}
+	/* Can be done with just one variable and double the time? */
+	//static uint8_t extraTime = 0;
 	//extraTime++;
-	//alarmextraTime++;
 	//if (extraTime > 5) {
-		//if (alarmextraTime > 10) {
-			//alarmextraTime = 0;
+		//if (extraTime > 10) {
 			//extraTime = 0;
 			//motorStop();
 			//stopTimer();
@@ -364,28 +385,13 @@ ISR(TIMER1_OVF_vect)
 			//restartTimer();
 			//state = ALARM;
 		//}
-	//}
-	/* Can be done with just one variable and double the time */
-	static uint8_t extraTime = 0;
-	extraTime++;
-	if (extraTime > 5) {
-		if (extraTime > 10) {
-			extraTime = 0;
-			motorStop();
-			stopTimer();
-			state = LOCKED;
-		} else {
-			motorStop();
-			restartTimer();
-			state = ALARM;
-		}
-	}	
+	//}	
 }
 /*
  * This one is a little bit clumsy :/
  * Compare vector for button debounce on 8-bit timer.
  * With limit = 100, we get 50 ms.
- * Because of change in timetrs.c, where frequency is now 1kHz (1 ms of delay),
+ * Because of change in timetrs.c, where frequency is now 1kHz,
  * the limit value has to be adjusted. So 1 means 1 ms.
  */
 ISR(TIMER0_COMPA_vect)
@@ -444,11 +450,17 @@ ISR(TIMER0_COMPA_vect)
 	}	
 }
 
-ISR(TIMER0_COMPB_vect)
-{
-	lock_solenoid();
-	TIMSK0 &= ~(1 << OCIE0B);			/* Disable the Output Compare Match B Interrupt */
-}
+/* Work in progress */
+//ISR(TIMER0_COMPB_vect)
+//{
+	//static uint8_t lckCount;
+	//static uint8_t lckcntLimit = 255;
+	//lckCount++;
+	//if (lckCount > lckcntLimit) {
+		//lock_solenoid();
+		//lckCount = 0;
+	//}
+//}
 
 
 /*

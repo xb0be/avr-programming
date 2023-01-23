@@ -18,4 +18,5 @@ void unlock_solenoid() {
 
 void lock_solenoid() {
 	OUTPUT_PORT &= ~(1 << LOCK_PIN);
+	TIMSK0 &= ~(1 << OCIE0B);			/* Disable the Output Compare Match B Interrupt */
 }
