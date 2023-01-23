@@ -7,6 +7,14 @@ opening				- green LED
 closing				- white LED
 stopping motor		- red LED
 */
+/* Define input and output registers and ports */
+#define INPUT_REG			DDRB	//Register for inputs
+#define OUTPUT_REG			DDRC	//Register for outputs
+#define INPUT_PORT			PORTB	//Port for inputs
+#define OUTPUT_PORT			PORTC	//Port for outputs
+#define INPUT_PIN			PINB	//Pin for inputs
+#define OUTPUT_PIN			PORTC	//Pin for outputs
+
 #define OPEN_LED_PIN		PC0		//Port for Open LED
 #define CLOSE_LED_PIN		PC1		//Port for Close LED
 #define MOTOR_STOP_LED_PIN	PC2		//Port for Stop motor LED
@@ -31,7 +39,7 @@ stopping motor		- red LED
 #define OPEN_CMD		0xA0				//Command to open the door
 #define CLOSE_CMD		0xF0				//Command to close the door
 
-//#define WAIT_TIME		3000				//Time to wait after a button is press
+#define WAIT_TIME		500				//Time to wait after a button is press
 
 //States of state machine
 #define IDLE		1

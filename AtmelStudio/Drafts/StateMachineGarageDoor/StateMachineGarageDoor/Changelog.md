@@ -1,4 +1,7 @@
 # Changelog
+2023-01-17
+- Smartgit installed, using branches for new, untested code (finally!)
+
 2023-01-16
 Lots of changes, fixes in the last week. Mainly:
 - fixed the ALARM and LOCKED state transitions
@@ -40,7 +43,7 @@ and there's enough space. He'll lead the mechanics department ;)
 - drawio schematic updated, new PNG exported
 
 ### TODO
-- add transition from CLOSED to LOCKED (manual + timeout?)
+- "extern" for RF variable? (because it's in multiple .c files) - https://www.avrfreaks.net/s/topic/a5C3l000000UljLEAS/t193424
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
 - (maybe) add additional switch when door is almost closed/open to trigger slower motor motion. Plus voltage divider with potentimeter ...
 - test with current RF kit. If not working, buy a new one (the current one is old as hell)

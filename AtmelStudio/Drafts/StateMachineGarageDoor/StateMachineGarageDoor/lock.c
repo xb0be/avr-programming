@@ -13,10 +13,10 @@
 
 void unlock_solenoid() {
 	OUTPUT_PORT |= (1 << LOCK_PIN);
-	//_delay_ms(200);					/* Solve this in main. Wait a little bit before starting a motor */
+	TIMSK0 = (1 << OCIE0B);				/* Enable Output Compare Match B Interrupt */
 }
 
 void lock_solenoid() {
-	//_delay_ms(200);					/* Solve this in main. Wait a little bit before locking */
 	OUTPUT_PORT &= ~(1 << LOCK_PIN);
+	TIMSK0 &= ~(1 << OCIE0B);			/* Disable the Output Compare Match B Interrupt */
 }
