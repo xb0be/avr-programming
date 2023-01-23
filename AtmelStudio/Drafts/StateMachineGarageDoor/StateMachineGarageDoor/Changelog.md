@@ -1,4 +1,7 @@
 # Changelog
+2023-01-23
+- git stress
+
 2023-01-17
 - Smartgit installed, using branches for new, untested code (finally!)
 
