@@ -199,6 +199,7 @@ int main(void) {
 				}
 				break;
 			case OPENING:
+				unlock_solenoid();
 				motorOpen();
 				/* If the timeout appears, interrupt will handle it */
 				
