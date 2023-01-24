@@ -367,25 +367,9 @@ ISR(TIMER1_OVF_vect)
 			state = LOCKED;
 		} else {
 			motorStop();
-			//restartTimer();
 			state = ALARM;
 		}
 	}
-	/* Can be done with just one variable and double the time? */
-	//static uint8_t extraTime = 0;
-	//extraTime++;
-	//if (extraTime > 5) {
-		//if (extraTime > 10) {
-			//extraTime = 0;
-			//motorStop();
-			//stopTimer();
-			//state = LOCKED;
-		//} else {
-			//motorStop();
-			//restartTimer();
-			//state = ALARM;
-		//}
-	//}	
 }
 /*
  * This one is a little bit clumsy :/
@@ -451,16 +435,16 @@ ISR(TIMER0_COMPA_vect)
 }
 
 /* Work in progress */
-//ISR(TIMER0_COMPB_vect)
-//{
-	//static uint8_t lckCount;
-	//static uint8_t lckcntLimit = 255;
-	//lckCount++;
-	//if (lckCount > lckcntLimit) {
-		//lock_solenoid();
-		//lckCount = 0;
-	//}
-//}
+ISR(TIMER0_COMPB_vect)
+{
+	static uint8_t lckCount;
+	static uint8_t lckcntLimit = 255;
+	lckCount++;
+	if (lckCount >= lckcntLimit) {
+		lock_solenoid();
+		lckCount = 0;
+	}
+}
 
 
 /*
