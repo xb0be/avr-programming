@@ -5,18 +5,19 @@
  * Author : rludvik
  * Version: 0.1
  
-Simple schematics:
+Simple schematic. Left here just for fun.
+For the full schematic see the schematics_schem.png
 
                        _____________
                       | ATmega328p  |
               _       |             |
- GND -------. | .---> | PB0     PC0 | ----> 4k7 --- Green LED (open)
+ GND -------. | .---> | PB0     PC0 | ----> 330 Ohms --- Green LED (open)
               _       |             |
- GND -------. | .---> | PB1     PC1 | ----> 4k7 --- White LED (close)
+ GND -------. | .---> | PB1     PC1 | ----> 330 Ohms --- White LED (close)
                       |             | 
-                      |         PC2 | ----> 4k7 --- Red LED (alarm)
+                      |         PC2 | ----> 330 Ohms --- Red LED (alarm)
                       |             | 					  
-                      |         PC6 | ----> 4k7 --- Blue LED (RF)				  
+                      |         PC6 | ----> 330 Ohms --- Blue LED (RF)				  
  GND -------./ .----> | PB2         |
                       |         PC3 | ----> Motor IN1
  GND -------./ .----> | PB3     PC4 | ----> Motor IN2
@@ -36,7 +37,7 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "settings.h"
 
 /* Variables list:
@@ -191,16 +192,14 @@ int main(void) {
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-					//unlock_solenoid();
-					//bob motorOpen();
-					/* Start a timer for TIMER0_COMPB_vect ??? TBC*/
 					restartTimer();
 					state = OPENING;
 				}
 				break;
 			case OPENING:
-				unlock_solenoid();
+				unlock_solenoid();			/* This also Enables Output Compare Match B Interrupt */
 				motorOpen();
+				
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -210,7 +209,6 @@ int main(void) {
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					//bob motorStop();
 					restartTimer();
 					state = ALARM;
 				}
@@ -218,7 +216,6 @@ int main(void) {
 				/* If the Close button was pressed, change state to CLOSING */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					restartTimer();
-					//bob motorClose();
 					state = CLOSING;
 				}
 				
@@ -249,7 +246,6 @@ int main(void) {
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-					//bob motorClose();
 					restartTimer();
 					state = CLOSING;
 				}
@@ -270,7 +266,7 @@ int main(void) {
 			 *	+ go to the CLOSED state
 			 */				
 			case CLOSING:
-				motorClose(); //bob
+				motorClose();
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
@@ -280,7 +276,6 @@ int main(void) {
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					//bob motorStop();
 					stopTimer();
 					state = ALARM;
 				}
@@ -288,7 +283,6 @@ int main(void) {
 				/* If the Open button was pressed, change state to OPENING */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					restartTimer();
-					//bob motorOpen();
 					state = OPENING;
 				}
 				
@@ -320,14 +314,11 @@ int main(void) {
 				OUTPUT_PORT |= (1 << ALARM_LED_PIN);
 				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-				motorStop(); //bob
+				motorStop();
 				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
 					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-					//bob motorClose();
-					//extraTime = 0;
-					//alarmextraTime = 0;
 					restartTimer();
 					state = CLOSING;
 				}
@@ -335,10 +326,7 @@ int main(void) {
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {	
 					OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-					//bob motorOpen();
 					restartTimer();
-					//extraTime = 0;
-					//alarmextraTime = 0;
 					state = OPENING;
 				}
 				break;			
