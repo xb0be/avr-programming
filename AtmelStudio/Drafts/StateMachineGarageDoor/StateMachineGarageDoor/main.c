@@ -6,7 +6,7 @@
  * Version: 0.1
  
 Simple schematic. Left here just for fun.
-For the full schematic see the schematics_schem.png
+For the full schematic see the schematics_VNH2SP30_schem.png
 
                        _____________
                       | ATmega328p  |
