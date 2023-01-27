@@ -45,6 +45,7 @@ ISR(USART_RX_vect)
 	raddress = USART_vReceiveByte();		//receive destination address
 	data = USART_vReceiveByte();			//receive data
 	chk = USART_vReceiveByte();				//receive checksum
+	
 	if(chk == (raddress+data))				//compare received checksum with calculated
 	{
 		if(raddress == RADDR)				//compare transmitter address
@@ -53,7 +54,6 @@ ISR(USART_RX_vect)
 			{
 				case MOTOR_STOP_CMD:
 					RF = 1;
-					//restartTimer();
 					state = ALARM;
 					break;
 				case MOTOR_OPEN_CMD:

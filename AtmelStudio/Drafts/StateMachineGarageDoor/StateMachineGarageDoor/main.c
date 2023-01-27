@@ -197,8 +197,7 @@ int main(void) {
 				}
 				break;
 			case OPENING:
-				unlock_solenoid();			/* This also Enables Output Compare Match B Interrupt */
-				motorOpen();
+				//unlock_solenoid();			/* This also Enables Output Compare Match B Interrupt */
 				
 				/* If the timeout appears, interrupt will handle it */
 				
@@ -206,7 +205,12 @@ int main(void) {
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
-												
+				
+				/* Start opening only if the Open door switch is NOT pressed ??? */
+				if (((INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
+					motorOpen();
+				}
+				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					restartTimer();
@@ -424,16 +428,16 @@ ISR(TIMER0_COMPA_vect)
 }
 
 /* Work in progress */
-ISR(TIMER0_COMPB_vect)
-{
-	static uint8_t lckCount;
-	static uint8_t lckcntLimit = 255;
-	lckCount++;
-	if (lckCount >= lckcntLimit) {
-		lock_solenoid();
-		lckCount = 0;
-	}
-}
+//ISR(TIMER0_COMPB_vect)
+//{
+	//static uint8_t lckCount;
+	//static uint8_t lckcntLimit = 255;
+	//lckCount++;
+	//if (lckCount >= lckcntLimit) {
+		//lock_solenoid();
+		//lckCount = 0;
+	//}
+//}
 
 
 /*
