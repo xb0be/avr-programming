@@ -207,9 +207,9 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
 				/* Start opening only if the Open door switch is NOT pressed ??? */
-				if (((INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
+	//			if (((INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
 					motorOpen();
-				}
+//				}
 				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
