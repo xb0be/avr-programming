@@ -1,6 +1,17 @@
 # Changelog
+2023-01-27
+- replaced switches with push buttons for Open and Close
+- replaced L298 with a brand new VNH2SP30 module, soldered everything together, works like a charm
+- updated schematics in Fritzing, exported in PNG and PDF, added to repo
+- added second ATMEGA328P, wired for now and just OPEN_CMD implemented currently, just for testing. Seems to work,
+  but there's an issue - it "freezes" in OPEN state after the MOTOR_OPEN_CMD is send over UART and the Close push
+  button is not working. It starts to work again if I send multiple MOTOR_OPEN_CMD commands over UART - looks like 
+  it doesn't land  in OPENING state for most of the times, have to investigate.
+- another issue with solenoid. Idea is to use Timer0, compare vector B, but the current implementation is weird :/
+  Commened out for now, have to think/try more.
+
 2023-01-23
-- git stress
+- git resolving conflicts stress :/
 
 2023-01-17
 - Smartgit installed, using branches for new, untested code (finally!)
@@ -46,11 +57,10 @@ and there's enough space. He'll lead the mechanics department ;)
 - drawio schematic updated, new PNG exported
 
 ### TODO
-- "extern" for RF variable? (because it's in multiple .c files) - https://www.avrfreaks.net/s/topic/a5C3l000000UljLEAS/t193424
+- (maybe RF variable is not needed?) "extern" for RF variable? (because it's in multiple .c files) - https://www.avrfreaks.net/s/topic/a5C3l000000UljLEAS/t193424
 - implement "Emergency stop" - pushbutton which changes a state to ALARM from any state. So stop motor, switch on red LED.
 - (maybe) add additional switch when door is almost closed/open to trigger slower motor motion. Plus voltage divider with potentimeter ...
 - test with current RF kit. If not working, buy a new one (the current one is old as hell)
-- update transmitter.c with new commands (see receiver.c), change settings (F_CPU, address, SYNC)
 - find a solution for photo-eye:
   + https://www.amazon.de/-/en/Receiver-Non-Modulator-Detection-KY-008-650nm-Transmitter/dp/B09TK119QX/ref=sr_1_9?crid=27KSHFT81FDYG&keywords=KY-008&qid=1671995727&sprefix=ky-008%2Caps%2C98&sr=8-9
   + https://www.build-electronic-circuits.com/ldr-circuit-diagram/
