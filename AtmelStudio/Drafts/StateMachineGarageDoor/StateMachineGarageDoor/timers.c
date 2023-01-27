@@ -61,11 +61,9 @@ void initTimer() {
  */
 void startTimer() {
 	TIMSK1 |= (1 << TOIE0);
-	//TIFR1 |= (1 << TOV1);
 	//TCCR1B |= (1 << CS12) | (1 << CS10);			//Start the timer. To stop it, just write 0 to these bits.
 	TCCR1B |= (1 << CS12);							//256 pre-scaler => 2 seconds per overflow
 	TCNT1 = 0;
-	//TIFR1 |= (1 << TOV1);
 }
 
 /*
@@ -74,16 +72,6 @@ void startTimer() {
 void stopTimer() {
 	//TCCR1B &= ~((1 << CS12) | (1 << CS10));
 	TCCR1B &= ~(1 << CS12);
-	//TIMSK1 &= ~(1 << TOIE0);
-	//TCCR1A=0;
-	//TCCR1B=0;
-	//TCNT1=0;
-	//OCR1A=0;
-	//OCR1B=0;
-	//ICR1=0;
-	//TIMSK1=0;
-	//TIFR1=0;
-	//TCNT1 = 0;
 }
 
 /*
