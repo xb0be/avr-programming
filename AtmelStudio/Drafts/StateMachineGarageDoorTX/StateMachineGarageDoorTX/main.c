@@ -21,10 +21,6 @@ char state = IDLE;
 
 /* Declarations */
 void debounceTimerStart();
-void initTimer();
-void startTimer();
-void stopTimer();
-void restartTimer();
 //void USART_Init();
 
 
