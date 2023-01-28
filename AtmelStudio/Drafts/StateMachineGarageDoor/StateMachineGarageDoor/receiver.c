@@ -14,7 +14,8 @@ Code for Receiver Model: XY-MK-5V Transmitting Frequency: 433.92MHz
 #include "settings.h"
 
 extern volatile char state;						//Needed to update the state machine in main.c
-volatile char RF = 0;						//Flag, if we are coming to state machine from RF
+volatile uint8_t RF = 0;						//Flag, if we are coming to state machine from RF
+volatile uint8_t doOpen = 0;
 
 extern void restartTimer();
 
@@ -54,6 +55,8 @@ ISR(USART_RX_vect)
 				case MOTOR_OPEN_CMD:
 					restartTimer();
 					state = OPENING;
+					//just set a variable and check it in main???
+					//doOpen = 1;
 					break;
 				case MOTOR_CLOSE_CMD:
 					restartTimer();
@@ -64,4 +67,8 @@ ISR(USART_RX_vect)
 			} //end switch
 		} //end if
 	} //end if
+	doOpen = 0;
+	//USART_vReceiveByte();
+	//USART_vReceiveByte();
+	//USART_vReceiveByte();
 } //end ISR

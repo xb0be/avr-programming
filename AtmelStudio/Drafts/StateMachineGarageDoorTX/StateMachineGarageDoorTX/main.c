@@ -32,8 +32,7 @@ void USART_Init(void) {
 	
 	//Set data frame format: asynchronous mode, no parity, 1 stop bit, 8 bit size
 	UCSR0C = (0 << UMSEL01) | (0 << UMSEL00) | (0 << UPM01) | (0 << UPM00) | (0 << USBS0) | (0 << UCSZ02) | (1 << UCSZ01) | (1 << UCSZ00);
-	//Enable Receiver Interrupt on receive complete
-	UCSR0B = (1 << RXEN0) | (1 << RXCIE0);
+	UCSR0B = (1 << TXEN0);					//Enable Transmitter
 }
 
 // Transmit data(byte) function

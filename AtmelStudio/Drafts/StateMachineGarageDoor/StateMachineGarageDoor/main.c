@@ -49,7 +49,8 @@ volatile char state = LOCKED;
 volatile uint8_t extraTime, alarmextraTime = 0;
 volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, cntEmergencyButton = 0;
 uint8_t chkLimit = 30;
-//volatile char RF; //TBD
+extern uint8_t RF;
+extern uint8_t doOpen;
 
 /* Declarations */
 void debounceTimerStart();
@@ -189,13 +190,18 @@ int main(void) {
 				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 
 				/* If the Open button was pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
+				//BUILD AND BURN AND TEST! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				if (((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) | (doOpen == 1)) {
+					doOpen = 0;
 					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
 					restartTimer();
 					state = OPENING;
 				}
 				break;
 			case OPENING:
+				//if (RF == 1) {				/* If entering this state from remote via UART */
+					//restartTimer();
+				//}
 				//unlock_solenoid();			/* This also Enables Output Compare Match B Interrupt */
 				
 				/* If the timeout appears, interrupt will handle it */
@@ -269,6 +275,9 @@ int main(void) {
 			 *	+ go to the CLOSED state
 			 */				
 			case CLOSING:
+				//if (RF == 1) {				/* If entering this state from remote via UART */
+					//restartTimer();
+				//}			
 				motorClose();
 				/* If the timeout appears, interrupt will handle it */
 				
