@@ -36,7 +36,7 @@ Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc
 #define F_CPU 8000000UL
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 //#include <util/delay.h>
 #include "settings.h"
 
@@ -79,7 +79,6 @@ int main(void) {
 	
 	debounceTimerStart();
 	initTimer();
-	//Part for receiver over UART - code is in receiver.c TBD
 	USART_Init();
 	sei();
 	
@@ -202,9 +201,9 @@ int main(void) {
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
-				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+				//OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				//OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				//OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 				
 				/* Start opening only if the Open door switch is NOT pressed ??? */
 	//			if (((INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
@@ -274,9 +273,9 @@ int main(void) {
 				/* If the timeout appears, interrupt will handle it */
 				
 				/* Right now just turn on both LEDs (opening + closing) to get a visual signal */
-				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
-				OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
+				//OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				//OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				//OUTPUT_PORT &= ~(1 << ALARM_LED_PIN);
 												
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {

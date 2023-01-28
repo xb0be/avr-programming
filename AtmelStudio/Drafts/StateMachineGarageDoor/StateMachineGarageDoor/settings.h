@@ -61,6 +61,6 @@
 ////Define commands
 #define MOTOR_STOP_CMD 0x69					//Command to stop the motor
 #define MOTOR_OPEN_CMD 0xA0					//Command to open the door
-#define MOTOR_CLOSE_CMD 0xF0				//Command to close the door
+#define MOTOR_CLOSE_CMD 0x25				//Command to close the door
 
 #endif

@@ -3,9 +3,6 @@
 
 /* Set up LEDs
 RF signal sending	- blue LED
-opening				- green LED
-closing				- white LED
-stopping motor		- red LED
 */
 /* Define input and output registers and ports */
 #define INPUT_REG			DDRB	//Register for inputs
@@ -29,17 +26,17 @@ stopping motor		- red LED
 #define BOUNCETIME			30		//Period for button bounce in ms
 
 //UART RF settings
-#define BAUDRATE		9600				//Set desired baud rate
+#define BAUDRATE			9600				//Set desired baud rate
 #define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//Calculate UBRR value
 //Define receive parameters
-#define SYNC			0xBB				//Synchronization signal
-#define RADDR			0x55				//Receiver address
+#define SYNC				0xBB				//Synchronization signal
+#define RADDR				0x55				//Receiver address
 //Define commands
-#define MOTOR_STOP_CMD	0x69				//Command to stop the motor
-#define OPEN_CMD		0xA0				//Command to open the door
-#define CLOSE_CMD		0xF0				//Command to close the door
+#define MOTOR_STOP_CMD		0x69				//Command to stop the motor
+#define MOTOR_OPEN_CMD		0xA0				//Command to open the door
+#define MOTOR_CLOSE_CMD		0x25				//Command to close the door
 
-#define WAIT_TIME		500				//Time to wait after a button is press
+//#define WAIT_TIME		500				//Time to wait after a button is press
 
 //States of state machine
 #define IDLE		1

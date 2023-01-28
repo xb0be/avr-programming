@@ -16,7 +16,7 @@
 #include "settings.h"
 
 //volatile uint8_t extraTime, alarmextraTime = 0;
-volatile uint8_t cntOpenButton, cntCloseButton,  cntEmergencyButton = 0;
+volatile uint8_t cntOpenButton, cntCloseButton, cntEmergencyButton = 0;
 uint8_t chkLimit = 30;
 char state;
 
@@ -26,7 +26,7 @@ void initTimer();
 void startTimer();
 void stopTimer();
 void restartTimer();
-void USART_Init();
+//void USART_Init();
 
 
 // Initializing UART
@@ -59,16 +59,16 @@ void Send_Packet(uint8_t addr, uint8_t cmd)
 }
 
 // The function returns a boolean value indicating whether or not the button was pressed
-unsigned char buttonPressed(unsigned char BUTTON){
-	if (!(INPUT_PIN & (1 << BUTTON)))			//The button is pressed when BUTTON bit is clear 
-	{
-		_delay_ms(BOUNCETIME);				//Time to wait while "de-bouncing" button
-		if (!(INPUT_PIN & (1 << BUTTON))){		//Check the state of the button again
-			return 1;
-		}
-	}
-	return 0;
-}
+//unsigned char buttonPressed(unsigned char BUTTON){
+	//if (!(INPUT_PIN & (1 << BUTTON)))			//The button is pressed when BUTTON bit is clear 
+	//{
+		//_delay_ms(BOUNCETIME);				//Time to wait while "de-bouncing" button
+		//if (!(INPUT_PIN & (1 << BUTTON))){		//Check the state of the button again
+			//return 1;
+		//}
+	//}
+	//return 0;
+//}
 
 int main(void)
 {
@@ -92,11 +92,11 @@ int main(void)
 		switch (state){
 			case IDLE:
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
-					Send_Packet(RADDR, OPEN_CMD);		//send Open cmd
+					Send_Packet(RADDR, MOTOR_OPEN_CMD);		//send Open cmd
 					state = OPENING;					//switch state
 				}
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {				
-					Send_Packet(RADDR, CLOSE_CMD);		//send Close cmd
+					Send_Packet(RADDR, MOTOR_CLOSE_CMD);		//send Close cmd
 					state = CLOSING;					//switch state					
 				}				
 				if ((!(INPUT_PIN & (1 << MOTOR_STOP_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
@@ -106,19 +106,19 @@ int main(void)
 				break;
 			case OPENING:
 				OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				_delay_ms(WAIT_TIME);						//wait a little bit
+				//_delay_ms(WAIT_TIME);						//wait a little bit
 				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
 				state = IDLE;
 				break;
 			case CLOSING:
 				OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state			
-				_delay_ms(WAIT_TIME);						//wait a little bit
+				//_delay_ms(WAIT_TIME);						//wait a little bit
 				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state				
 				state = IDLE;
 				break;
 			case STOPPING:
 				OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state			
-				_delay_ms(WAIT_TIME);						//wait a little bit
+				//_delay_ms(WAIT_TIME);						//wait a little bit
 				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state				
 				state = IDLE;
 				break;
