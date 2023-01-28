@@ -19,8 +19,7 @@ volatile char RF = 0;						//Flag, if we are coming to state machine from RF
 extern void restartTimer();
 
 //Initializing UART
-void USART_Init(void)
-{
+void USART_Init(void) {
 	//Setting the baud rate is done by writing to the UBRR0H and UBRR0L registers
 	UBRR0H = (UBRRVAL >> 8);				//high byte
 	UBRR0L = (uint8_t)UBRRVAL;				//low byte
@@ -32,8 +31,7 @@ void USART_Init(void)
 }
 
 //Read the value out of the UART buffer
-uint8_t USART_vReceiveByte(void)
-{
+uint8_t USART_vReceiveByte(void) {
 	while((UCSR0A & (1 << RXC0)) == 0);		//Wait until a byte has been received
 	return UDR0;							//Return received data 
 }
@@ -46,23 +44,18 @@ ISR(USART_RX_vect)
 	data = USART_vReceiveByte();			//receive data
 	chk = USART_vReceiveByte();				//receive checksum
 	
-	if(chk == (raddress+data))				//compare received checksum with calculated
-	{
-		if(raddress == RADDR)				//compare transmitter address
-		{
-			switch (data)
-			{
+	if(chk == (raddress+data)) {			//compare received checksum with calculated
+		if(raddress == RADDR) {				//compare transmitter address
+			RF = 1;
+			switch (data) {
 				case MOTOR_STOP_CMD:
-					RF = 1;
 					state = ALARM;
 					break;
 				case MOTOR_OPEN_CMD:
-					RF = 1;
 					restartTimer();
 					state = OPENING;
 					break;
 				case MOTOR_CLOSE_CMD:
-					RF = 1;
 					restartTimer();
 					state = CLOSING;
 					break;
@@ -72,28 +65,3 @@ ISR(USART_RX_vect)
 		} //end if
 	} //end if
 } //end ISR
-
-// Main initialization
-void Main_Init(void)
-{
-	//DDRC=0xFFu; //	Set all pins of the PORTC as output.
-	//PORTC=0xFFu; // Set all pins of the PORTC as HIGH. Internal Pull Up resistor is enable.
-	//sei(); //enable global interrupts
-}
-
-// main function - entry point of the program
-/*
-int main(void)
-{
-	Main_Init();
-	USART_Init();
-
-	// main endless loop
-	while(1)
-	{
-		
-	}
-	//nothing here interrupts are working
-	return 0;
-}
-*/

@@ -15,9 +15,9 @@ stopping motor		- red LED
 #define INPUT_PIN			PINB	//Pin for inputs
 #define OUTPUT_PIN			PORTC	//Pin for outputs
 
-#define OPEN_LED_PIN		PC0		//Port for Open LED
-#define CLOSE_LED_PIN		PC1		//Port for Close LED
-#define MOTOR_STOP_LED_PIN	PC2		//Port for Stop motor LED
+//#define OPEN_LED_PIN		PC0		//Port for Open LED
+//#define CLOSE_LED_PIN		PC1		//Port for Close LED
+//#define MOTOR_STOP_LED_PIN	PC2		//Port for Stop motor LED
 #define RF_LED_PIN			PC3		//Port for RF LED
 
 //Button definition

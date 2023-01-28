@@ -12,9 +12,22 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 #include "settings.h"
 
-//char state;
+//volatile uint8_t extraTime, alarmextraTime = 0;
+volatile uint8_t cntOpenButton, cntCloseButton,  cntEmergencyButton = 0;
+uint8_t chkLimit = 30;
+char state;
+
+/* Declarations */
+void debounceTimerStart();
+void initTimer();
+void startTimer();
+void stopTimer();
+void restartTimer();
+void USART_Init();
+
 
 // Initializing UART
 void USART_Init(void)
@@ -67,48 +80,46 @@ int main(void)
 	INPUT_REG &= ~(1 << MOTOR_STOP_BTN_PIN);			//set CLOSE_SWITCH_PIN as input for the button
 	INPUT_PORT |= (1 << MOTOR_STOP_BTN_PIN);			//enable pull-up resistor on button input
 
-//	char state = IDLE;						//Initial state is IDLE
+	debounceTimerStart();
+	initTimer();
+	state = IDLE;						//Initial state is IDLE
 	USART_Init();
-
+	OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the RF LED	
+	sei();
+	
 	while(1)
 	{
-		//switch (state){
-			//case IDLE:
-				if (buttonPressed(OPEN_BTN_PIN)){		//if Open button was pressed
-					OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn on the RF LED
-					OUTPUT_PORT |= (1 << OPEN_LED_PIN);		//turn on the Open LED
+		switch (state){
+			case IDLE:
+				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					Send_Packet(RADDR, OPEN_CMD);		//send Open cmd
-					//state = OPENING;					//switch state
+					state = OPENING;					//switch state
 				}
-				if (buttonPressed(CLOSE_BTN_PIN)){		//if Close button was pressed
-					OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn on the RF LED
-					OUTPUT_PORT |= (1 << CLOSE_LED_PIN);		//turn on the Close LED					
+				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {				
 					Send_Packet(RADDR, CLOSE_CMD);		//send Close cmd
-					//state = CLOSING;					//switch state					
+					state = CLOSING;					//switch state					
 				}				
-				if (buttonPressed(MOTOR_STOP_BTN_PIN)){		//if Stop motor button was pressed
-					OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn on the RF LED
-					OUTPUT_PORT |= (1 << MOTOR_STOP_LED_PIN);	//turn on the Stop motor LED					
+				if ((!(INPUT_PIN & (1 << MOTOR_STOP_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					Send_Packet(RADDR, MOTOR_STOP_CMD);	//send Stop motor cmd
-					//state = STOPPING;					//switch state					
+					state = STOPPING;					//switch state					
 				}				
 				break;
 			case OPENING:
-				_delay_ms(WAIT_TIME);					//wait a little bit
+				OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
+				_delay_ms(WAIT_TIME);						//wait a little bit
 				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 				state = IDLE;
 				break;
 			case CLOSING:
-				_delay_ms(WAIT_TIME);					//wait a little bit
-				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state			
+				_delay_ms(WAIT_TIME);						//wait a little bit
+				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state				
 				state = IDLE;
 				break;
 			case STOPPING:
-				_delay_ms(WAIT_TIME);					//wait a little bit
-				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state
-				OUTPUT_PORT &= ~(1 << MOTOR_STOP_LED_PIN);
+				OUTPUT_PORT |= (1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state			
+				_delay_ms(WAIT_TIME);						//wait a little bit
+				OUTPUT_PORT &= ~(1 << RF_LED_PIN);			//turn off the LEDs and go to IDLE state				
 				state = IDLE;
 				break;
 			default:
@@ -116,4 +127,40 @@ int main(void)
 		} //end switch
 	}
 	return 0;
+}
+
+ISR(TIMER0_COMPA_vect)
+{
+	static uint8_t cntLimit = 50;
+
+	if (!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) {
+		cntCloseButton++;
+		if (cntCloseButton > cntLimit) {
+			cntCloseButton = 0;
+		}
+		} else {
+		if (cntCloseButton > 0) {
+			cntCloseButton--;
+		}
+	}
+	if (!(INPUT_PIN & (1 << OPEN_BTN_PIN))) {
+		cntOpenButton++;
+		if (cntOpenButton > cntLimit) {
+			cntOpenButton = 0;
+		}
+		} else {
+		if (cntOpenButton > 0) {
+			cntOpenButton--;
+		}
+	}
+	if (!(INPUT_PIN & (1 << MOTOR_STOP_BTN_PIN))) {
+		cntEmergencyButton++;
+		if (cntEmergencyButton > cntLimit) {
+			cntEmergencyButton = 0;
+		}
+		} else {
+		if (cntEmergencyButton > 0) {
+			cntEmergencyButton--;
+		}
+	}
 }

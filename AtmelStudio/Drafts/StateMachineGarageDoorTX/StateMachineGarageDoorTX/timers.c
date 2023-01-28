@@ -51,7 +51,6 @@ the Timer/Counter overflow interrupt is enabled.
 */
 void initTimer() {
 	TIMSK1 |= (1 << TOIE0);
-	//sei();
 }
 
 /*
