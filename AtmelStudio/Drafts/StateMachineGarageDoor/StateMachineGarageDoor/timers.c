@@ -28,21 +28,17 @@
  *
  * So with 256 pre-scaler_
  * OCR0A = 15 => we get 1 ms square wave time period
- * OCR0B = 255 => we get 16 ms square wave time period
- * TIMSK0 = (1 << OCIE0B); HAS TO BE RUN AFTER THE LOCK IS PULLED AND HOLD UNTIL COMPARE MATCH (~4 seconds)
- * This will be set in unlock_solenoid() and unset WHERE???
  */
 void debounceTimerStart() {
-	//OCR0A = 249;
 	OCR0A = 15;
-	//OCR0B = 255;
 	TCCR0A |= (1 << WGM01); 			//Set CTC mode
-	//TCCR0B = (1 << CS01);				//Set 8 prescaler
 	TCCR0B = (1 << CS02);				//Set 256 prescaler
 	TIMSK0 = (1 << OCIE0A);				//Timer/Counter0 Output Compare Match A Interrupt Enable
-	//TIMSK0 = (1 << OCIE0B);			//Timer/Counter0 Output Compare Match B Interrupt Enable
-	//sei();							//Will be set in main
 }
+
+/*
+*		OBSOLETE 16-BIT TIMER CODE BELOW
+*/
 
 /* Initialization of 16-bit timer, used for timeouts
 Each overflow for 1024 prescaler at 8MHz lasts ~8.38 seconds
@@ -61,7 +57,7 @@ void initTimer() {
 void startTimer() {
 	//2023-01-31TIMSK1 |= (1 << TOIE0);
 	//2023-01-312023-01-31TCCR1B |= (1 << CS12);							//256 pre-scaler => 2 seconds per overflow
-	TCNT1 = 0;
+	//TCNT1 = 0;
 }
 
 /*

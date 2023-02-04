@@ -54,13 +54,10 @@ ISR(USART_RX_vect)
 						state = LOCKED;
 						break;
 					case MOTOR_OPEN_CMD:
-						//2023-01-31restartTimer();
 						turnOffLEDs();
 						state = OPENING;
 						break;
 					case MOTOR_CLOSE_CMD:
-						//2023-01-31restartTimer();
-						//TCNT1 = 0;
 						turnOffLEDs();
 						state = CLOSING;
 						break;

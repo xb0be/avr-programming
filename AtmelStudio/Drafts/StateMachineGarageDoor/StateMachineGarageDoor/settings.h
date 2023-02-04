@@ -22,27 +22,23 @@
 /* Emergency push button to stop the motor running */
 #define EMERGENCY_BTN_PIN	PB4
 
-/* LEDs, motor, lock					- ################ OUTPUTS ################
+/* LEDs, motor					- ################ OUTPUTS ################
  * opening, closing	- green and white LEDs on
  * open				- green LED on
  * closed			- white LED on
  * alarm			- red LED on
- * RF signal		- blue LED on
  */
 #define OPEN_LED_PIN		PC0		//Port for Open LED
 #define CLOSE_LED_PIN		PC1		//Port for Close LED
 #define LOCKED_LED_PIN		PC2		//Port for Alarm LED
 #define MOTOR_IN1_PIN		PC3		//To motor's IN1
 #define MOTOR_IN2_PIN		PC4		//To motor's IN2
-//#define LOCK_PIN			PC5		//Pin for electro magnetic lock (relay or MOSFET)
-//#define RF_LED_PIN			PC6		//Port for RF LED
 
 /* States definition. Define all states of the machine */
 #define CLOSED		1
 #define CLOSING		2
 #define OPEN		3
 #define OPENING		4
-//#define ALARM		5
 #define LOCKED		6
 #define ONE			7
 #define TWO			8

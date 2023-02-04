@@ -1,4 +1,16 @@
 # Changelog
+2023-02-04
+- 16-bit timer removed, since it was causing troubles => didn't dig into it
+- timeout implemented in the 8-bit timer ISR (the one also used for de-bouncing)
+- ALARM state removed
+- state machine map updated
+- reciever.c updated
+- settings.h updated
+- comments cleanup
+- locking will not be used
+- NOTES moved from main.c to the end of this file
+
+
 2023-01-27
 - replaced switches with push buttons for Open and Close
 - replaced L298 with a brand new VNH2SP30 module, soldered everything together, works like a charm
@@ -71,3 +83,28 @@ and there's enough space. He'll lead the mechanics department ;)
  + sliding door with "normal" door with lock to access buttons inside
  + electro magnetic key/lock with emergency manual release = Solenoid
 - put uC to sleep (power-down), wake up with interrupt (button pressed) => may need to change pin settings for buttons, since now INT0 and INT1 are already used. Or use pin change interrupt.
+
+
+
+# NOTES
+
+/*
+ * When we press the switch, the input pin is pulled to ground. Thus, we?re
+ * waiting for the pin to go low.
+ * The button is pressed when BUTTON1 bit is clear: if (!(PINB & (1<<BUTTON1)))
+ 
+ 
+Debouncing is pretty straightforward, not sure why you're messing around so much.
+
+Make it easy:
+set up a timer irq that fires 200 times a sec
+in the irq check switch A
+if it is pressed:
+	increment countA, limit the count to 40 max
+else
+	decrement countA, don't let it go below zero
+
+Do the same thing for switch B (countB)
+ 
+in your main code  if countA is > 20 then the switch is pressed & do what you want likewise for B
+ */
