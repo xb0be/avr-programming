@@ -3,7 +3,7 @@
  *
  * Created: 12/11/2022 2:22:03 PM
  * Author : rludvik
- * Version: 0.1
+ * Version: 0.3 (2022-02-04)
  * For the full schematic see the schematics_VNH2SP30_schem.png
  * Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc-mode.html
  */ 
