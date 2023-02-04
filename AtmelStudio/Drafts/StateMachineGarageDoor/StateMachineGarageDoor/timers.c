@@ -50,8 +50,7 @@ When the TOIE0 bit is written to one, and the I-bit in the status register is se
 the Timer/Counter overflow interrupt is enabled.
 */
 void initTimer() {
-	TIMSK1 |= (1 << TOIE0);
-	//sei();
+	//2023-01-31TIMSK1 |= (1 << TOIE0);
 }
 
 /*
@@ -60,9 +59,8 @@ void initTimer() {
  * Each overflow for 256 pre-scaler at 8MHz lasts app 2 seconds.
  */
 void startTimer() {
-	TIMSK1 |= (1 << TOIE0);
-	//TCCR1B |= (1 << CS12) | (1 << CS10);			//Start the timer. To stop it, just write 0 to these bits.
-	TCCR1B |= (1 << CS12);							//256 pre-scaler => 2 seconds per overflow
+	//2023-01-31TIMSK1 |= (1 << TOIE0);
+	//2023-01-312023-01-31TCCR1B |= (1 << CS12);							//256 pre-scaler => 2 seconds per overflow
 	TCNT1 = 0;
 }
 
@@ -70,17 +68,21 @@ void startTimer() {
  * Stop the timer.
  */
 void stopTimer() {
-	//TCCR1B &= ~((1 << CS12) | (1 << CS10));
-	TCCR1B &= ~(1 << CS12);
+	//2023-01-31TCCR1B &= ~(1 << CS12);
 }
 
 /*
  * Shortcut for stop+start timer.
  */
 void restartTimer() {
-	extern uint8_t extraTime, alarmextraTime;
-	stopTimer();
-	startTimer();
-	extraTime = 0;
-	alarmextraTime = 0;
+	//extern uint8_t extraTime, alarmextraTime;
+	//stopTimer();
+	//startTimer();
+	//extraTime = 0;
+	//alarmextraTime = 0;
 }
+
+/* cmds for 1024 pre-scaler
+ * 	//TCCR1B |= (1 << CS12) | (1 << CS10);			//from startTimer
+ * 	//TCCR1B &= ~((1 << CS12) | (1 << CS10));		//from StopTimer
+ */

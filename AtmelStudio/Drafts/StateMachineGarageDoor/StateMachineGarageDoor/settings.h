@@ -31,10 +31,10 @@
  */
 #define OPEN_LED_PIN		PC0		//Port for Open LED
 #define CLOSE_LED_PIN		PC1		//Port for Close LED
-#define ALARM_LED_PIN		PC2		//Port for Alarm LED
+#define LOCKED_LED_PIN		PC2		//Port for Alarm LED
 #define MOTOR_IN1_PIN		PC3		//To motor's IN1
 #define MOTOR_IN2_PIN		PC4		//To motor's IN2
-#define LOCK_PIN			PC5		//Pin for electro magnetic lock (relay or MOSFET)
+//#define LOCK_PIN			PC5		//Pin for electro magnetic lock (relay or MOSFET)
 //#define RF_LED_PIN			PC6		//Port for RF LED
 
 /* States definition. Define all states of the machine */
@@ -42,7 +42,7 @@
 #define CLOSING		2
 #define OPEN		3
 #define OPENING		4
-#define ALARM		5
+//#define ALARM		5
 #define LOCKED		6
 #define ONE			7
 #define TWO			8
@@ -59,8 +59,8 @@
 #define SYNC 0xBB							//synchronization signal
 #define RADDR 0x55							//receiver address
 ////Define commands
-#define MOTOR_STOP_CMD 0x69					//Command to stop the motor
-#define MOTOR_OPEN_CMD 0xA0					//Command to open the door
-#define MOTOR_CLOSE_CMD 0x25				//Command to close the door
+#define EMERGENCY_STOP_CMD	0x69			//Command to stop the motor
+#define MOTOR_OPEN_CMD		0xA0			//Command to open the door
+#define MOTOR_CLOSE_CMD		0x25			//Command to close the door
 
 #endif

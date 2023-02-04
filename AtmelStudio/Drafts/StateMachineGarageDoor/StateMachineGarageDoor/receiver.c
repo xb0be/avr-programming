@@ -7,17 +7,14 @@ Code for Receiver Model: XY-MK-5V Transmitting Frequency: 433.92MHz
 #ifndef F_CPU
 #define F_CPU 8000000UL
 #endif
-
+#include "settings.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-//#include <util/delay.h>
-#include "settings.h"
+#include <util/delay.h>
 
 extern volatile char state;						//Needed to update the state machine in main.c
-volatile uint8_t RF = 0;						//Flag, if we are coming to state machine from RF
-volatile uint8_t doOpen = 0;
-
 extern void restartTimer();
+extern void turnOffLEDs();
 
 //Initializing UART
 void USART_Init(void) {
@@ -33,8 +30,8 @@ void USART_Init(void) {
 
 //Read the value out of the UART buffer
 uint8_t USART_vReceiveByte(void) {
-	while((UCSR0A & (1 << RXC0)) == 0);		//Wait until a byte has been received
-	return UDR0;							//Return received data 
+		while((UCSR0A & (1 << RXC0)) == 0);		//Wait until a byte has been received
+		return UDR0;							//Return received data 
 }
 
 //USART Receiver interrupt service routine
@@ -47,28 +44,29 @@ ISR(USART_RX_vect)
 	
 	if(chk == (raddress+data)) {			//compare received checksum with calculated
 		if(raddress == RADDR) {				//compare transmitter address
-			RF = 1;
-			switch (data) {
-				case MOTOR_STOP_CMD:
-					state = ALARM;
-					break;
-				case MOTOR_OPEN_CMD:
-					restartTimer();
-					state = OPENING;
-					//just set a variable and check it in main???
-					//doOpen = 1;
-					break;
-				case MOTOR_CLOSE_CMD:
-					restartTimer();
-					state = CLOSING;
-					break;
-				default:
-					break; 
-			} //end switch
+			OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
+			_delay_ms(500);
+			OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
+			_delay_ms(500);
+				switch (data) {
+					case EMERGENCY_STOP_CMD:
+						turnOffLEDs();
+						state = LOCKED;
+						break;
+					case MOTOR_OPEN_CMD:
+						//2023-01-31restartTimer();
+						turnOffLEDs();
+						state = OPENING;
+						break;
+					case MOTOR_CLOSE_CMD:
+						//2023-01-31restartTimer();
+						//TCNT1 = 0;
+						turnOffLEDs();
+						state = CLOSING;
+						break;
+					default:
+						break; 
+				} //end switch
 		} //end if
 	} //end if
-	doOpen = 0;
-	//USART_vReceiveByte();
-	//USART_vReceiveByte();
-	//USART_vReceiveByte();
 } //end ISR
