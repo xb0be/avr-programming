@@ -23,7 +23,7 @@
  * chkLimit: setting for ms for button de-bouncing
  * timeoutLimit: setting for ms for timeout
  */
-volatile char state = LOCKED;
+volatile char state = STARTING;
 volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, cntEmergencyButton = 0;
 volatile uint16_t cntTimeout = 0;
 uint8_t chkLimit = 30;
@@ -67,6 +67,22 @@ int main(void) {
 	{
 		switch (state)
 		{
+			case STARTING:
+				turnOffLEDs();
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+				_delay_ms(500);
+				turnOffLEDs();
+				_delay_ms(500);
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+				_delay_ms(500);
+				turnOffLEDs();
+				state = LOCKED;
+				break;
+			
 			case LOCKED:
 				turnOffLEDs();
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
@@ -101,10 +117,26 @@ int main(void) {
 				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					state = IDLE;
+					state = PRE_IDLE;
 				}				
 				break;
-									
+			
+			case PRE_IDLE:
+				turnOffLEDs();
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+				_delay_ms(250);
+				turnOffLEDs();
+				_delay_ms(250);
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+				_delay_ms(250);
+				turnOffLEDs();
+				state = IDLE;
+				break;
+						
 			case IDLE:
 				turnOffLEDs();
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
@@ -164,11 +196,6 @@ int main(void) {
 					state = LOCKED;
 				}
 				
-				/* If the Close button was pressed */
-				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
-					state = CLOSING;
-				}
-				
 				/* If the Open door switch was hit */
 				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
 					motorStop();
@@ -209,18 +236,13 @@ int main(void) {
 					state = LOCKED;
 				}
 				
-				/* If the Open button was pressed */
-				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
-					state = OPENING;
-				}
-				
 				/* If the Closed door switch was hit */
 				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & (cntCloseSwitch > chkLimit)) {
 					motorStop();
 					state = CLOSED;
 				}
 				
-				/* if photo-eye blocked - TBD */
+				/* if photo-eye blocked - TBD => go to LOCKED state*/
 				break;
 			
 			default:

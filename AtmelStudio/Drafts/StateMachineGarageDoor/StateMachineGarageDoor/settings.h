@@ -44,6 +44,8 @@
 #define TWO			8
 #define THREE		9
 #define IDLE		10
+#define STARTING	11
+#define PRE_IDLE		12
 
 /* Period for de-bounce in ms */
 #define BOUNCETIME	30
