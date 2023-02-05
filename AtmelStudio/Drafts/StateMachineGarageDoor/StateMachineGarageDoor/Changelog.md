@@ -1,4 +1,7 @@
 # Changelog
+2023-02-05
+- moved PB pins for switches to free up the pins for ISP programmer
+
 2023-02-04
 - 16-bit timer removed, since it was causing troubles => didn't dig into it
 - timeout implemented in the 8-bit timer ISR (the one also used for de-bouncing)

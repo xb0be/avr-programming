@@ -17,10 +17,10 @@
 
 /* Pins for switches that signal that door was fully closed or fully open */
 #define OPEN_SWITCH_PIN		PB2		//Red wire
-#define CLOSE_SWITCH_PIN	PB3		//White wire
+#define CLOSE_SWITCH_PIN	PB6		//White wire
 
 /* Emergency push button to stop the motor running */
-#define EMERGENCY_BTN_PIN	PB4
+#define EMERGENCY_BTN_PIN	PB7
 
 /* LEDs, motor					- ################ OUTPUTS ################
  * opening, closing	- green and white LEDs on
