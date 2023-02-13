@@ -27,7 +27,8 @@ RF signal sending	- blue LED
 
 //UART RF settings
 #define BAUDRATE			9600				//Set desired baud rate
-#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//Calculate UBRR value
+//#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//Calculate UBRR value
+#define UBRRVAL 51
 //Define receive parameters
 #define SYNC				0xBB				//Synchronization signal
 #define RADDR				0x55				//Receiver address
