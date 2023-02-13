@@ -57,7 +57,9 @@ int main(void) {
 	INPUT_REG &= ~(1 << CLOSE_SWITCH_PIN);		//set CLOSE_SWITCH_PIN as input for the button
 	INPUT_PORT |= (1 << CLOSE_SWITCH_PIN);		//enable pull-up resistor on button input
 	INPUT_REG &= ~(1 << EMERGENCY_BTN_PIN);		//set MOTOR_STOP_PIN as input for the button
-	INPUT_PORT |= (1 << EMERGENCY_BTN_PIN);		//enable pull-up resistor on button input	
+	INPUT_PORT |= (1 << EMERGENCY_BTN_PIN);		//enable pull-up resistor on button input
+	DDRD &= ~(1<< PD0);							//set PD0 as input (RX)
+	PORTD |= (1 << PD0);						//enable pull-up resistor on RX (PD0)
 	
 	debounceTimerStart();
 	USART_Init();
@@ -80,49 +82,48 @@ int main(void) {
 				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				_delay_ms(500);
 				turnOffLEDs();
+				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				state = LOCKED;
 				break;
 			
 			case LOCKED:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
-				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+				
 				motorStop();
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
+					turnOffLEDs();
+					OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 					state = ONE;
 				}
 				break;
 				
 			case ONE:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				
 				
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
+					turnOffLEDs();
+					OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 					state = TWO;
 				}
 				break;
 				
 			case TWO:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+				
 				
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
+					turnOffLEDs();
+					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 					state = THREE;
 				}
 				break;
 				
 			case THREE:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
-				
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
+					turnOffLEDs();
 					state = PRE_IDLE;
 				}				
 				break;
 			
 			case PRE_IDLE:
-				turnOffLEDs();
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
@@ -134,51 +135,56 @@ int main(void) {
 				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				_delay_ms(250);
 				turnOffLEDs();
+				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				state = IDLE;
 				break;
 						
 			case IDLE:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
-				
 				/* If the Open door switch was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
+					OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 					state = OPEN;
 				}
 				
 				/* If the Closed door switch was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & (cntCloseSwitch > chkLimit)) {
+					OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
 					state = CLOSED;
 				}
 				
 				/* If the Open button was pressed */
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
-					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-					state = OPENING;
+					state = PRE_OPENING;
 				}
 				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
-					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-					state = CLOSING;
+					state = PRE_CLOSING;
 				}
 				break;
 
 			case CLOSED:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-
 				/* If the Open button was pressed */
 				if (((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit))) {
-					OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-					state = OPENING;
+					state = PRE_OPENING;
 				}
 				
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
+					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 					state = LOCKED;
 				}				
 				break;
+				
+			case PRE_OPENING:
+				turnOffLEDs();
+				OUTPUT_PORT ^= (1 << OPEN_LED_PIN);
+				_delay_ms(250);
+				OUTPUT_PORT ^= (1 << OPEN_LED_PIN);
+				_delay_ms(250);
+				state = OPENING;
+				break;
+				
 			case OPENING:
 				/* If the timeout happened */
 				if (cntTimeout > timeoutLimit) {
@@ -186,6 +192,8 @@ int main(void) {
 					_delay_ms(250);
 					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
 					_delay_ms(250);
+					motorStop();
+					cntTimeout = 0;
 					state = LOCKED;
 				}
 				
@@ -193,24 +201,25 @@ int main(void) {
 				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
+					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+					cntTimeout = 0;
 					state = LOCKED;
 				}
 				
 				/* If the Open door switch was hit */
 				if ((!(INPUT_PIN & (1 << OPEN_SWITCH_PIN))) & (cntOpenSwitch > chkLimit)) {
 					motorStop();
+					turnOffLEDs();
+					OUTPUT_PORT |= (1 << OPEN_LED_PIN);
+					cntTimeout = 0;
 					state = OPEN;
 				}
 				break;
 
 			case OPEN:
-				turnOffLEDs();
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
-				
 				/* If the Close button was pressed */
 				if ((!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) & (cntCloseButton > chkLimit)) {
-					OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
-					state = CLOSING;
+					state = PRE_CLOSING;
 				}
 				
 				/* If the Emergency button was pressed */
@@ -219,26 +228,47 @@ int main(void) {
 				}				
 				break;
 			
+			case PRE_CLOSING:
+				cli();
+				turnOffLEDs();
+				OUTPUT_PORT ^= (1 << CLOSE_LED_PIN);
+				_delay_ms(250);
+				OUTPUT_PORT ^= (1 << CLOSE_LED_PIN);
+				_delay_ms(250);
+				sei();
+				state = CLOSING;
+				break;
+				
 			case CLOSING:
 				/* If the timeout happened */
 				if (cntTimeout > timeoutLimit) {
+					cli();
 					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
 					_delay_ms(500);
 					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
 					_delay_ms(500);
+					motorStop();
+					cntTimeout = 0;
+					sei();
 					state = LOCKED;
 				}
-						
+				
 				motorClose();
 				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
+					cntTimeout = 0;
 					state = LOCKED;
 				}
 				
 				/* If the Closed door switch was hit */
 				if ((!(INPUT_PIN & (1 << CLOSE_SWITCH_PIN))) & (cntCloseSwitch > chkLimit)) {
+					cli();
 					motorStop();
+					turnOffLEDs();
+					OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
+					cntTimeout = 0;
+					sei();
 					state = CLOSED;
 				}
 				
@@ -260,7 +290,7 @@ int main(void) {
 ISR(TIMER0_COMPA_vect)
 {
 	static uint8_t cntLimit = 50;
-	static uint16_t timeoutLimit = 15000;
+	static uint16_t ISRtimeoutLimit = 15000;
 
 	if (!(INPUT_PIN & (1 << CLOSE_BTN_PIN))) {
 		cntCloseButton++;
@@ -314,7 +344,7 @@ ISR(TIMER0_COMPA_vect)
 	}
 	if ((state == 2) | (state == 4)) {		/* Opening or Closing state */
 		cntTimeout++;
-		if (cntTimeout > timeoutLimit) {
+		if (cntTimeout > ISRtimeoutLimit) {
 			cntTimeout = 0;
 		}
 	} else {
