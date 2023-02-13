@@ -3,19 +3,18 @@
  *
  * Created: 12/11/2022 2:22:03 PM
  * Author : rludvik
- * Version: 0.3 (2022-02-04)
- * For the full schematic see the schematics_VNH2SP30_schem.png
- * Timer calculator: https://www.ee-diary.com/2021/07/programming-atmega328p-in-ctc-mode.html
+ * Version: 0.4 (2023-02-13)
+ * For the full schematic see the schematics in git
  */ 
 
+#ifndef F_CPU
 #define F_CPU 8000000UL
+#endif
+
 #include "settings.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-//#include <stdbool.h>
 #include <util/delay.h>
-#include <string.h>
-
 
 /* Variables list:
  * state: initial state of the state machine
@@ -29,7 +28,6 @@ volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, c
 volatile uint16_t cntTimeout = 0;
 uint8_t chkLimit = 30;
 uint16_t timeoutLimit = 10000;
-//unsigned char openingmsg[] = "Going to OPENING!\n";
 
 /* Declarations */
 void debounceTimerStart();
@@ -37,8 +35,6 @@ void USART_Init();
 void motorOpen();
 void motorStop();
 void motorClose();
-void lock_solenoid();
-void unlock_solenoid();
 extern void sendstr();
 
 /* Turn all the LEDs off */
@@ -284,6 +280,8 @@ int main(void) {
 } //end main
 
 /*
+ * ################ MOST OF THIS WILL GO AWAY WHEN I RECIEVE MAX6818 ################
+ * 
  * This one is a little bit clumsy :/
  * Compare vector for button debounce on 8-bit timer.
  * cntlimit value: 1 means 1 ms => 10000 is 10 seconds

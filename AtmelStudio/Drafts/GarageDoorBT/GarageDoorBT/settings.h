@@ -22,18 +22,13 @@
 /* Emergency push button to stop the motor running */
 #define EMERGENCY_BTN_PIN	PB7
 
-/* LEDs, motor					- ################ OUTPUTS ################
- * opening, closing	- green and white LEDs on
- * open				- green LED on
- * closed			- white LED on
- * alarm			- red LED on
- */
+/* LEDs, motor					- ################ OUTPUTS ################ */
 #define OPEN_LED_PIN		PC0		//Port for Open LED
 #define CLOSE_LED_PIN		PC1		//Port for Close LED
 #define LOCKED_LED_PIN		PC2		//Port for Alarm LED
 #define MOTOR_IN1_PIN		PC3		//To motor's IN1
 #define MOTOR_IN2_PIN		PC4		//To motor's IN2
-#define RF_LED_PIN			PC5		//Just for diagnostic if we get something from RF via UART
+#define RF_LED_PIN			PC5		//Just for diagnostic if we get something via UART
 
 /* States definition. Define all states of the machine */
 #define CLOSED		1
@@ -54,22 +49,14 @@
 #define BOUNCETIME	30
 
 //UART RF settings - WORK IN PROGRESS
-#define BAUDRATE 9600						//set desired baud rate
+#define BAUDRATE	9600						//set desired baud rate
 //#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//calculate UBRR value
-#define UBRRVAL 51
-////Define receive parameters
-//#define SYNC 0xBB							//synchronization signal
-//#define RADDR 0x55							//receiver address
-////Define commands
-//#define EMERGENCY_STOP_CMD	0x69			//Command to stop the motor
-//#define MOTOR_OPEN_CMD		0xA0			//Command to open the door
-//#define MOTOR_CLOSE_CMD		0x25			//Command to close the door
+#define UBRRVAL		51
 
-#define openingmsg		"Going to OPENING!\n"
-#define alarmmsg		"Going to LOCKED!\n"
-#define closingmsg		"Going to CLOSING!\n"
-#define startingmsg		"Starting ...\n"
-#define idlemsg			"Going to IDLE!\n"
-
+#define openingmsg	"Going to OPENING!\n"
+#define alarmmsg	"Going to LOCKED!\n"
+#define closingmsg	"Going to CLOSING!\n"
+#define startingmsg	"Starting ...\n"
+#define idlemsg		"Going to IDLE!\n"
 
 #endif
