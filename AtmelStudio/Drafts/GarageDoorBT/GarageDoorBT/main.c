@@ -28,6 +28,8 @@ volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, c
 volatile uint16_t cntTimeout = 0;
 uint8_t chkLimit = 30;
 uint16_t timeoutLimit = 10000;
+//unsigned char* alarmmsg;
+unsigned char status_in;
 
 /* Declarations */
 void debounceTimerStart();
@@ -60,14 +62,31 @@ int main(void) {
 	DDRD &= ~(1<< PD0);							//set PD0 as input (RX)
 	PORTD |= (1 << PD0);						//enable pull-up resistor on RX (PD0)
 	
+	//alarmmsg = (unsigned char*)"Going to LOCKED!\n";
 	debounceTimerStart();
 	USART_Init();
 	sei();
+	
+	//alarmmsg = (char)*"ALARM!";
+	
 	
 	while(1)
 	{
 		switch (state)
 		{
+			/* Read the status of input pins and send it to BT device.
+			 * Currently just send the byte over.
+			 * If it works, add some "formatting"/more info, like:
+			 * Fully open switch state: OFF
+			 * Fully closed switch state: ON
+			 */
+			case GET_STATUS:
+				status_in = INPUT_PIN;
+				sendstr("Status of inputs: \n");
+				sendstr(status_in);
+				state = PRE_IDLE;
+				break;
+				
 			case STARTING:
 				sendstr(startingmsg);
 				turnOffLEDs();
@@ -85,7 +104,12 @@ int main(void) {
 				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				state = LOCKED;
 				break;
-				
+
+			case PRE_LOCKED:
+				sendstr(alarmmsg);
+				state = LOCKED;
+			break;
+							
 			case LOCKED:
 				motorStop();
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {

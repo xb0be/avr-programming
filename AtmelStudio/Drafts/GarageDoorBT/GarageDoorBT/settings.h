@@ -28,7 +28,7 @@
 #define LOCKED_LED_PIN		PC2		//Port for Alarm LED
 #define MOTOR_IN1_PIN		PC3		//To motor's IN1
 #define MOTOR_IN2_PIN		PC4		//To motor's IN2
-#define RF_LED_PIN			PC5		//Just for diagnostic if we get something via UART
+#define BT_LED_PIN			PC5		//Just for diagnostic if we get something via UART
 
 /* States definition. Define all states of the machine */
 #define CLOSED		1
@@ -44,6 +44,8 @@
 #define PRE_IDLE	12
 #define PRE_OPENING	13
 #define PRE_CLOSING	14
+#define GET_STATUS	15
+#define PRE_LOCKED	16
 
 /* Period for de-bounce in ms */
 #define BOUNCETIME	30
