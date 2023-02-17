@@ -44,8 +44,7 @@
 #define PRE_IDLE	12
 #define PRE_OPENING	13
 #define PRE_CLOSING	14
-#define GET_STATUS	15
-#define PRE_LOCKED	16
+#define PRE_LOCKED	15
 
 /* Period for de-bounce in ms */
 #define BOUNCETIME	30

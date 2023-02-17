@@ -12,7 +12,6 @@
 
 extern volatile char state;					//Needed to update the state machine in main.c
 extern void turnOffLEDs();
-//extern unsigned char* alarmmsg;
 
 void USART_Init(void) {
 	//Setting the baud rate is done by writing to the UBRR0H and UBRR0L registers
@@ -51,7 +50,7 @@ void sendstr(unsigned char *MSG) {
 //}
 
 /* USART Receiver interrupt service routine 
- * Read command from the bluetooth device and change the state accordingly
+ * Read command from the BT device and change the state accordingly
  * "a" = Alarm
  * "o" = Open
  * "c" = Close

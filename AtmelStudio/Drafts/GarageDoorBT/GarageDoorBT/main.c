@@ -28,7 +28,6 @@ volatile uint8_t cntOpenButton, cntCloseButton, cntOpenSwitch, cntCloseSwitch, c
 volatile uint16_t cntTimeout = 0;
 uint8_t chkLimit = 30;
 uint16_t timeoutLimit = 10000;
-//unsigned char* alarmmsg;
 
 /* Declarations */
 void debounceTimerStart();
@@ -61,7 +60,6 @@ int main(void) {
 	DDRD &= ~(1<< PD0);							//set PD0 as input (RX)
 	PORTD |= (1 << PD0);						//enable pull-up resistor on RX (PD0)
 	
-	//alarmmsg = (unsigned char*)"Going to LOCKED!\n";
 	debounceTimerStart();
 	USART_Init();
 	sei();
