@@ -29,7 +29,6 @@ volatile uint16_t cntTimeout = 0;
 uint8_t chkLimit = 30;
 uint16_t timeoutLimit = 10000;
 //unsigned char* alarmmsg;
-unsigned char status_in;
 
 /* Declarations */
 void debounceTimerStart();
@@ -67,26 +66,10 @@ int main(void) {
 	USART_Init();
 	sei();
 	
-	//alarmmsg = (char)*"ALARM!";
-	
-	
 	while(1)
 	{
 		switch (state)
-		{
-			/* Read the status of input pins and send it to BT device.
-			 * Currently just send the byte over.
-			 * If it works, add some "formatting"/more info, like:
-			 * Fully open switch state: OFF
-			 * Fully closed switch state: ON
-			 */
-			case GET_STATUS:
-				status_in = INPUT_PIN;
-				sendstr("Status of inputs: \n");
-				sendstr(status_in);
-				state = PRE_IDLE;
-				break;
-				
+		{		
 			case STARTING:
 				sendstr(startingmsg);
 				turnOffLEDs();

@@ -55,7 +55,6 @@ void sendstr(unsigned char *MSG) {
  * "a" = Alarm
  * "o" = Open
  * "c" = Close
- * "s" = Status (get status)
  */
 ISR(USART_RX_vect)
 {
@@ -66,7 +65,6 @@ ISR(USART_RX_vect)
 	OUTPUT_PORT &= ~(1 << BT_LED_PIN);
 	_delay_ms(250);
 	if (data == 'a') {
-		//sendstr(alarmmsg);
 		state = PRE_LOCKED;
 	}
 	else if (data =='o') {
@@ -74,9 +72,6 @@ ISR(USART_RX_vect)
 	}
 	else if (data == 'c') {
 		state = PRE_CLOSING;
-	}
-	else if (data == 's') {
-		state = GET_STATUS;
 	}
 	else {
 	}
