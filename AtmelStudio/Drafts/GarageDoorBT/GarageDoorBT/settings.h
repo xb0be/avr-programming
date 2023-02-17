@@ -54,10 +54,4 @@
 //#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//calculate UBRR value
 #define UBRRVAL		51
 
-#define openingmsg	"Going to OPENING!\n"
-#define alarmmsg	"Going to LOCKED!\n"
-#define closingmsg	"Going to CLOSING!\n"
-#define startingmsg	"Starting ...\n"
-#define idlemsg		"Going to IDLE!\n"
-
 #endif

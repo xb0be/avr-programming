@@ -30,11 +30,11 @@ uint8_t USART_vReceiveByte(void) {
 		return UDR0;
 }
 
-/* Send data to remote */
-void sendstr(unsigned char *MSG) {
-	while ((UCSR0A & (1 << UDRE0)) == 0) {};		// Wait if a byte is being transmitted
-	UDR0 = *MSG;
-}
+/////* Send data to remote */
+////void sendstr(unsigned char *MSG) {
+	////while ((UCSR0A & (1 << UDRE0)) == 0) {};		// Wait if a byte is being transmitted
+	////UDR0 = *MSG;
+////}
 
 //void sendbyte(unsigned char MSG) {
 	//while((UCSR0A&(1<<UDRE0)) == 0);		// Wait if a byte is being transmitted
@@ -60,9 +60,9 @@ ISR(USART_RX_vect)
 	uint8_t data;
 	data = USART_vReceiveByte();
 	OUTPUT_PORT |= (1 << BT_LED_PIN);
-	_delay_ms(250);
+	_delay_ms(200);
 	OUTPUT_PORT &= ~(1 << BT_LED_PIN);
-	_delay_ms(250);
+	_delay_ms(200);
 	if (data == 'a') {
 		state = PRE_LOCKED;
 	}

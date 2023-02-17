@@ -35,7 +35,6 @@ void USART_Init();
 void motorOpen();
 void motorStop();
 void motorClose();
-extern void sendstr();
 
 /* Turn all the LEDs off */
 void turnOffLEDs() {
@@ -69,7 +68,6 @@ int main(void) {
 		switch (state)
 		{		
 			case STARTING:
-				sendstr(startingmsg);
 				turnOffLEDs();
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
@@ -87,7 +85,6 @@ int main(void) {
 				break;
 
 			case PRE_LOCKED:
-				sendstr(alarmmsg);
 				state = LOCKED;
 			break;
 							
@@ -137,7 +134,6 @@ int main(void) {
 				turnOffLEDs();
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
-				sendstr(idlemsg);
 				state = IDLE;
 				break;
 						
@@ -173,7 +169,6 @@ int main(void) {
 				
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
-					sendstr(alarmmsg);
 					state = LOCKED;
 				}				
 				break;
@@ -184,7 +179,6 @@ int main(void) {
 				_delay_ms(250);
 				OUTPUT_PORT ^= (1 << OPEN_LED_PIN);
 				_delay_ms(250);
-				sendstr(openingmsg);
 				state = OPENING;
 				break;
 				
@@ -197,7 +191,6 @@ int main(void) {
 					_delay_ms(250);
 					motorStop();
 					cntTimeout = 0;
-					sendstr(alarmmsg);
 					state = LOCKED;
 				}
 				
@@ -207,7 +200,6 @@ int main(void) {
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 					cntTimeout = 0;
-					sendstr(alarmmsg);
 					state = LOCKED;
 				}
 				
@@ -229,7 +221,6 @@ int main(void) {
 				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					sendstr(alarmmsg);
 					state = LOCKED;
 				}				
 				break;
@@ -240,7 +231,6 @@ int main(void) {
 				_delay_ms(250);
 				OUTPUT_PORT ^= (1 << CLOSE_LED_PIN);
 				_delay_ms(250);
-				sendstr(closingmsg);
 				state = CLOSING;
 				break;
 				
@@ -253,7 +243,6 @@ int main(void) {
 					_delay_ms(500);
 					motorStop();
 					cntTimeout = 0;
-					sendstr(alarmmsg);
 					state = LOCKED;
 				}
 				
@@ -262,7 +251,6 @@ int main(void) {
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
 					cntTimeout = 0;
-					sendstr(alarmmsg);
 					state = LOCKED;
 				}
 				
