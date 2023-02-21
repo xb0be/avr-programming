@@ -162,7 +162,6 @@ int main(void) {
 				}
 				
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					//OUTPUT_PORT |= (1 << POWER_LED_PIN);
 					state = LOCKED;
 				}				
 				break;
@@ -192,7 +191,6 @@ int main(void) {
 				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					//OUTPUT_PORT |= (1 << POWER_LED_PIN);
 					cntTimeout = 0;
 					state = LOCKED;
 				}
