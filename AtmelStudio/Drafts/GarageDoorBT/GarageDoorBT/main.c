@@ -40,7 +40,7 @@ void motorClose();
 void turnOffLEDs() {
 	OUTPUT_PORT &= ~(1 << OPEN_LED_PIN);
 	OUTPUT_PORT &= ~(1 << CLOSE_LED_PIN);
-	OUTPUT_PORT &= ~(1 << LOCKED_LED_PIN);
+	OUTPUT_PORT &= ~(1 << POWER_LED_PIN);
 }
 
 /* Main code begins here */
@@ -71,16 +71,13 @@ int main(void) {
 				turnOffLEDs();
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				_delay_ms(500);
 				turnOffLEDs();
 				_delay_ms(500);
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				_delay_ms(500);
 				turnOffLEDs();
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				state = LOCKED;
 				break;
 
@@ -108,7 +105,7 @@ int main(void) {
 			case TWO:
 				if ((!(INPUT_PIN & (1 << OPEN_BTN_PIN))) & (cntOpenButton > chkLimit)) {
 					turnOffLEDs();
-					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+					OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 					state = THREE;
 				}
 				break;
@@ -123,17 +120,14 @@ int main(void) {
 			case PRE_IDLE:
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				_delay_ms(250);
 				turnOffLEDs();
 				_delay_ms(250);
 				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
 				OUTPUT_PORT |= (1 << CLOSE_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
 				_delay_ms(250);
 				turnOffLEDs();
-				OUTPUT_PORT |= (1 << OPEN_LED_PIN);
-				OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+				OUTPUT_PORT |= (1 << POWER_LED_PIN);
 				state = IDLE;
 				break;
 						
@@ -168,7 +162,7 @@ int main(void) {
 				}
 				
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+					//OUTPUT_PORT |= (1 << POWER_LED_PIN);
 					state = LOCKED;
 				}				
 				break;
@@ -185,9 +179,9 @@ int main(void) {
 			case OPENING:
 				/* If the timeout happened */
 				if (cntTimeout > timeoutLimit) {
-					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
+					OUTPUT_PORT ^= (1 << POWER_LED_PIN);
 					_delay_ms(250);
-					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
+					OUTPUT_PORT ^= (1 << POWER_LED_PIN);
 					_delay_ms(250);
 					motorStop();
 					cntTimeout = 0;
@@ -198,7 +192,7 @@ int main(void) {
 				
 				/* If the Emergency button was pressed */
 				if ((!(INPUT_PIN & (1 << EMERGENCY_BTN_PIN))) & (cntEmergencyButton > chkLimit)) {
-					OUTPUT_PORT |= (1 << LOCKED_LED_PIN);
+					//OUTPUT_PORT |= (1 << POWER_LED_PIN);
 					cntTimeout = 0;
 					state = LOCKED;
 				}
@@ -237,9 +231,9 @@ int main(void) {
 			case CLOSING:
 				/* If the timeout happened */
 				if (cntTimeout > timeoutLimit) {
-					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
+					OUTPUT_PORT ^= (1 << POWER_LED_PIN);
 					_delay_ms(500);
-					OUTPUT_PORT ^= (1 << LOCKED_LED_PIN);
+					OUTPUT_PORT ^= (1 << POWER_LED_PIN);
 					_delay_ms(500);
 					motorStop();
 					cntTimeout = 0;

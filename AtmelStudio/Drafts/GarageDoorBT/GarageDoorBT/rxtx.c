@@ -59,9 +59,9 @@ ISR(USART_RX_vect)
 {
 	uint8_t data;
 	data = USART_vReceiveByte();
-	OUTPUT_PORT |= (1 << BT_LED_PIN);
+	OUTPUT_PORT |= (1 << POWER_LED_PIN);
 	_delay_ms(200);
-	OUTPUT_PORT &= ~(1 << BT_LED_PIN);
+	OUTPUT_PORT &= ~(1 << POWER_LED_PIN);
 	_delay_ms(200);
 	if (data == 'a') {
 		state = PRE_LOCKED;

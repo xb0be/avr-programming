@@ -25,10 +25,10 @@
 /* LEDs, motor					- ################ OUTPUTS ################ */
 #define OPEN_LED_PIN		PC0		//Port for Open LED
 #define CLOSE_LED_PIN		PC1		//Port for Close LED
-#define LOCKED_LED_PIN		PC2		//Port for Alarm LED
+#define POWER_LED_PIN		PC2		//Port for Alarm LED
 #define MOTOR_IN1_PIN		PC3		//To motor's IN1
 #define MOTOR_IN2_PIN		PC4		//To motor's IN2
-#define BT_LED_PIN			PC5		//Just for diagnostic if we get something via UART
+//#define RELAY_PIN			PC5		//Relay to power up the ATX
 
 /* States definition. Define all states of the machine */
 #define CLOSED		1
@@ -49,9 +49,8 @@
 /* Period for de-bounce in ms */
 #define BOUNCETIME	30
 
-//UART RF settings - WORK IN PROGRESS
-#define BAUDRATE	9600						//set desired baud rate
-//#define UBRRVAL ((F_CPU/(BAUDRATE*8UL))-1)	//calculate UBRR value
+#define BAUDRATE	9600
+//#define UBRRVAL ((F_CPU/(BAUDRATE*16))-1)	//calculate UBRR value
 #define UBRRVAL		51
 
 #endif
